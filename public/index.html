@@ -31,25 +31,29 @@
         .progress-fill { height: 100%; border-radius: 10px; transition: width 1s ease; }
         .btn-canal { display: block; text-align: center; padding: 10px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; text-decoration: none; transition: opacity 0.2s; cursor: pointer; border: none; }
         .btn-canal:hover { opacity: 0.8; }
-        .btn-publicar { width: 100%; margin-top: 10px; padding: 12px; border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a1a2e, #333); border: 1px solid #555; transition: all 0.2s; }
+        .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-publicar { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a1a2e, #333); border: 1px solid #555; transition: all 0.2s; }
         .btn-publicar:hover { background: linear-gradient(135deg, #333, #555); }
+        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); border: 1px solid #4CAF50; transition: all 0.2s; position: relative; }
+        .btn-mensajes:hover { background: linear-gradient(135deg, #1a3a1a, #2a4a2a); }
+        .badge { position: absolute; top: -6px; right: -6px; background: #FF6B6B; color: #fff; border-radius: 50%; width: 20px; height: 20px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .loading { text-align: center; padding: 50px; color: #888; font-size: 1.2rem; }
         .refresh-btn { position: fixed; bottom: 30px; right: 30px; background: #00d4ff; color: #000; border: none; border-radius: 50px; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 100; }
         .last-update { text-align: center; color: #555; font-size: 0.8rem; padding: 10px; }
 
-        /* MODAL */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        /* MODALS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: flex-start; padding: 20px; overflow-y: auto; }
         .modal-overlay.active { display: flex; }
-        .modal { background: #1a1a2e; border-radius: 20px; padding: 30px; width: 90%; max-width: 550px; border: 1px solid #333; max-height: 90vh; overflow-y: auto; }
+        .modal { background: #1a1a2e; border-radius: 20px; padding: 30px; width: 100%; max-width: 600px; border: 1px solid #333; margin: auto; }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-title { font-size: 1.2rem; font-weight: bold; }
         .modal-close { background: none; border: none; color: #888; font-size: 1.5rem; cursor: pointer; }
         .modal-canal-info { background: #222; border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.9rem; color: #aaa; }
 
-        /* TABS DE OPCIONES */
+        /* TABS */
         .opciones-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
         .tab-btn { padding: 10px 5px; border-radius: 10px; border: 1px solid #333; background: #222; color: #888; font-size: 0.75rem; font-weight: bold; cursor: pointer; text-align: center; transition: all 0.2s; }
-        .tab-btn.active { border-color: var(--canal-color); color: var(--canal-color); background: #111; }
+        .tab-btn.active { border-color: var(--canal-color, #00d4ff); color: var(--canal-color, #00d4ff); background: #111; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
@@ -59,26 +63,33 @@
         textarea:focus { outline: none; border-color: #555; }
         .btn-generar { width: 100%; padding: 14px; border-radius: 10px; border: none; font-size: 1rem; font-weight: bold; cursor: pointer; margin-top: 15px; transition: all 0.2s; }
         .btn-generar:hover { opacity: 0.85; }
-
-        /* STATUS */
         .status-box { background: #111; border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 0.85rem; color: #aaa; display: none; }
         .status-box.active { display: block; }
         .status-line { margin-bottom: 6px; }
         .status-line.ok { color: #4CAF50; }
         .status-line.error { color: #FF6B6B; }
         .status-line.loading { color: #00d4ff; }
-
-        /* RESULTADO */
         .resultado-box { background: #0a2a0a; border: 1px solid #4CAF50; border-radius: 10px; padding: 15px; margin-top: 15px; display: none; }
         .resultado-box.active { display: block; }
         .resultado-link { color: #4CAF50; word-break: break-all; font-size: 0.85rem; }
+
+        /* PANEL MENSAJES */
+        .comentario-card { background: #111; border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid #222; }
+        .comentario-autor { font-size: 0.85rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px; }
+        .comentario-video { font-size: 0.75rem; color: #666; margin-bottom: 8px; }
+        .comentario-texto { font-size: 0.9rem; color: #ddd; margin-bottom: 12px; line-height: 1.4; }
+        .comentario-meta { font-size: 0.75rem; color: #555; margin-bottom: 12px; }
+        .comentario-acciones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .btn-accion { padding: 8px; border-radius: 8px; border: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn-accion:hover { opacity: 0.8; }
+        .no-comentarios { text-align: center; color: #555; padding: 30px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1>📺 YouTube Dashboard</h1>
-    <p>Panel de control — 9 canales en tiempo real</p>
+    <p>Panel de control — Todos los canales en tiempo real</p>
 </div>
 
 <div class="totales">
@@ -99,46 +110,45 @@
             <button class="modal-close" onclick="cerrarModalBtn()">✕</button>
         </div>
         <div class="modal-canal-info" id="modalCanalInfo">Canal seleccionado</div>
-
-        <!-- TABS -->
+        <div id="modalContextoComentario" style="display:none;background:#0a2a0a;border:1px solid #4CAF50;border-radius:10px;padding:12px;margin-bottom:15px;font-size:0.85rem;color:#aaa;"></div>
         <div class="opciones-tabs">
             <div class="tab-btn active" onclick="cambiarTab(0)" id="tab0">✍️ Texto<br>Comunidad</div>
             <div class="tab-btn" onclick="cambiarTab(1)" id="tab1">💡 Idea<br>de Guión</div>
             <div class="tab-btn" onclick="cambiarTab(2)" id="tab2">📝 Guión<br>Completo</div>
         </div>
-
-        <!-- TAB 0: TEXTO COMUNIDAD -->
         <div class="tab-content active" id="content0">
             <label class="input-label">Escribe tu publicación para la comunidad del canal:</label>
             <textarea id="textoComu" placeholder="Ej: ¿Cuál es tu mayor reto para bajar de peso? Cuéntanos 👇"></textarea>
-            <button class="btn-generar" id="btnTexto" onclick="publicarTexto()" style="background:#4CAF50;color:#000;">
-                📢 Publicar en Comunidad
-            </button>
+            <button class="btn-generar" onclick="publicarTexto()" style="background:#4CAF50;color:#000;">📢 Publicar en Comunidad</button>
             <div class="status-box" id="statusTexto"></div>
             <div class="resultado-box" id="resultadoTexto"></div>
         </div>
-
-        <!-- TAB 1: IDEA DE GUIÓN -->
         <div class="tab-content" id="content1">
             <label class="input-label">Escribe una idea corta — la IA genera el guión completo y crea el video:</label>
-            <textarea id="ideaGuion" placeholder="Ej: hablar sobre por qué el cardio en ayunas no quema grasa" style="min-height:80px;"></textarea>
-            <button class="btn-generar" id="btnIdea" onclick="generarDesdeIdea()" style="background:#00d4ff;color:#000;">
-                🤖 Generar Guión y Crear Video
-            </button>
+            <textarea id="ideaGuion" placeholder="Ej: responder al usuario que preguntó sobre cardio en ayunas" style="min-height:80px;"></textarea>
+            <button class="btn-generar" id="btnIdea" onclick="generarDesdeIdea()" style="background:#00d4ff;color:#000;">🤖 Generar Guión y Crear Video</button>
             <div class="status-box" id="statusIdea"></div>
             <div class="resultado-box" id="resultadoIdea"></div>
         </div>
-
-        <!-- TAB 2: GUIÓN COMPLETO -->
         <div class="tab-content" id="content2">
             <label class="input-label">Escribe el guión completo — el sistema crea el video con la voz del canal:</label>
             <textarea id="guionCompleto" placeholder="Escribe aquí el guión completo que quieres narrar..." style="min-height:150px;"></textarea>
-            <button class="btn-generar" id="btnGuion" onclick="crearDesdeGuion()" style="background:#9B59B6;color:#fff;">
-                🎬 Crear Video con Este Guión
-            </button>
+            <button class="btn-generar" id="btnGuion" onclick="crearDesdeGuion()" style="background:#9B59B6;color:#fff;">🎬 Crear Video con Este Guión</button>
             <div class="status-box" id="statusGuion"></div>
             <div class="resultado-box" id="resultadoGuion"></div>
         </div>
+    </div>
+</div>
+
+<!-- MODAL MENSAJES -->
+<div class="modal-overlay" id="modalMensajes" onclick="cerrarMensajes(event)">
+    <div class="modal" style="max-width:650px;">
+        <div class="modal-header">
+            <div class="modal-title" id="mensajesTitle">💬 Mensajes</div>
+            <button class="modal-close" onclick="document.getElementById('modalMensajes').classList.remove('active')">✕</button>
+        </div>
+        <div class="modal-canal-info" id="mensajesCanalInfo"></div>
+        <div id="mensajesLista"><div class="no-comentarios">⏳ Cargando comentarios...</div></div>
     </div>
 </div>
 
@@ -159,6 +169,7 @@ const CANALES = [
 
 let canalActual = null;
 let tabActual = 0;
+let comentarioContexto = null;
 
 function fmt(n) {
     if (!n || n === '0') return '0';
@@ -174,22 +185,53 @@ async function fetchCanalStats(canal) {
     const r = await fetch(url);
     const d = await r.json();
     const stats = d.items?.[0]?.statistics || {};
-    return {
-        ...canal,
-        suscriptores: parseInt(stats.subscriberCount || 0),
-        vistas: parseInt(stats.viewCount || 0),
-        videos: parseInt(stats.videoCount || 0),
-    };
+    return { ...canal, suscriptores: parseInt(stats.subscriberCount||0), vistas: parseInt(stats.viewCount||0), videos: parseInt(stats.videoCount||0) };
+}
+
+async function fetchComentarios(canalId) {
+    try {
+        // Obtener videos recientes del canal
+        const urlVideos = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${canalId}&maxResults=10&order=date&type=video&key=${API_KEY}`;
+        const rVideos = await fetch(urlVideos);
+        const dVideos = await rVideos.json();
+        const videos = dVideos.items || [];
+        
+        let todosComentarios = [];
+        for (const video of videos.slice(0, 5)) {
+            const vid = video.id.videoId;
+            if (!vid) continue;
+            const urlC = `https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${vid}&maxResults=10&order=time&key=${API_KEY}`;
+            const rC = await fetch(urlC);
+            const dC = await rC.json();
+            if (dC.items) {
+                dC.items.forEach(item => {
+                    const c = item.snippet.topLevelComment.snippet;
+                    todosComentarios.push({
+                        id: item.id,
+                        videoId: vid,
+                        videoTitulo: video.snippet.title,
+                        autor: c.authorDisplayName,
+                        texto: c.textDisplay,
+                        likes: c.likeCount,
+                        fecha: new Date(c.publishedAt).toLocaleDateString('es-DO'),
+                    });
+                });
+            }
+        }
+        return todosComentarios;
+    } catch(e) {
+        return [];
+    }
 }
 
 async function cargarDatos() {
     document.getElementById('canales').innerHTML = '<div class="loading">⏳ Actualizando...</div>';
     try {
         const resultados = await Promise.all(CANALES.map(fetchCanalStats));
-        const totalSubs   = resultados.reduce((s, c) => s + c.suscriptores, 0);
-        const totalVistas = resultados.reduce((s, c) => s + c.vistas, 0);
-        const totalVideos = resultados.reduce((s, c) => s + c.videos, 0);
-        document.getElementById('total-subs').textContent   = fmt(totalSubs);
+        const totalSubs = resultados.reduce((s,c)=>s+c.suscriptores,0);
+        const totalVistas = resultados.reduce((s,c)=>s+c.vistas,0);
+        const totalVideos = resultados.reduce((s,c)=>s+c.videos,0);
+        document.getElementById('total-subs').textContent = fmt(totalSubs);
         document.getElementById('total-vistas').textContent = fmt(totalVistas);
         document.getElementById('total-videos').textContent = fmt(totalVideos);
         document.getElementById('canales').innerHTML = resultados.map(c => `
@@ -207,22 +249,19 @@ async function cargarDatos() {
                     <div class="metric"><div class="valor" style="color:${c.color}">${c.videos}</div><div class="mlabel">Videos</div></div>
                 </div>
                 <div class="progress-section">
-                    <div class="progress-label"><span>🔔 Subs meta</span><span>${c.suscriptores}/1,000 (${pct(c.suscriptores, 1000)}%)</span></div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.suscriptores, 1000)}%;background:${c.color}"></div></div>
+                    <div class="progress-label"><span>🔔 Subs meta</span><span>${c.suscriptores}/1,000 (${pct(c.suscriptores,1000)}%)</span></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.suscriptores,1000)}%;background:${c.color}"></div></div>
                     <div class="progress-label"><span>⏱️ Horas visualización</span><span>${fmt(c.vistas)}/400K</span></div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.vistas, 400000)}%;background:${c.color}"></div></div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.vistas,400000)}%;background:${c.color}"></div></div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;">
-                    <a href="https://www.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:${c.color};color:#000;">
-                        📺 Ver Canal
-                    </a>
-                    <a href="https://studio.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:#222;color:#fff;border:1px solid ${c.color};">
-                        🎬 YouTube Studio
-                    </a>
+                    <a href="https://www.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:${c.color};color:#000;">📺 Ver Canal</a>
+                    <a href="https://studio.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:#222;color:#fff;border:1px solid ${c.color};">🎬 YouTube Studio</a>
                 </div>
-                <button class="btn-publicar" onclick="abrirModal('${c.id}', '${c.nombre}', '${c.color}', '${c.emoji}')">
-                    📹 Publicar Video / Comunidad
-                </button>
+                <div class="btn-row" style="margin-top:10px;">
+                    <button class="btn-publicar" onclick="abrirModal('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">📹 Publicar Video</button>
+                    <button class="btn-mensajes" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">💬 Mensajes</button>
+                </div>
             </div>
         `).join('');
         document.getElementById('last-update').textContent = '🕐 ' + new Date().toLocaleString('es-DO');
@@ -231,139 +270,165 @@ async function cargarDatos() {
     }
 }
 
-// ─── MODAL ───
-function abrirModal(id, nombre, color, emoji) {
+// ─── MODAL PUBLICAR ───
+function abrirModal(id, nombre, color, emoji, contexto=null) {
     canalActual = { id, nombre, color, emoji };
+    comentarioContexto = contexto;
     document.getElementById('modalTitle').textContent = `📹 Publicar — ${emoji} ${nombre}`;
-    document.getElementById('modalCanalInfo').textContent = `Canal: ${nombre} | ID: ${id}`;
+    document.getElementById('modalCanalInfo').textContent = `Canal: ${nombre}`;
     document.documentElement.style.setProperty('--canal-color', color);
+    const ctx = document.getElementById('modalContextoComentario');
+    if (contexto) {
+        ctx.style.display = 'block';
+        ctx.innerHTML = `💬 Respondiendo a <strong style="color:#00d4ff">${contexto.autor}</strong>:<br><em>"${contexto.texto}"</em>`;
+    } else {
+        ctx.style.display = 'none';
+    }
     resetModal();
+    document.getElementById('modalMensajes').classList.remove('active');
     document.getElementById('modalOverlay').classList.add('active');
 }
 
-function cerrarModal(e) {
-    if (e.target === document.getElementById('modalOverlay')) cerrarModalBtn();
-}
-
-function cerrarModalBtn() {
-    document.getElementById('modalOverlay').classList.remove('active');
-    resetModal();
-}
+function cerrarModal(e) { if (e.target===document.getElementById('modalOverlay')) cerrarModalBtn(); }
+function cerrarModalBtn() { document.getElementById('modalOverlay').classList.remove('active'); resetModal(); }
 
 function resetModal() {
     cambiarTab(0);
-    ['textoComu','ideaGuion','guionCompleto'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-    });
-    ['statusTexto','statusIdea','statusGuion','resultadoTexto','resultadoIdea','resultadoGuion'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) { el.classList.remove('active'); el.innerHTML = ''; }
-    });
+    ['textoComu','ideaGuion','guionCompleto'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    ['statusTexto','statusIdea','statusGuion','resultadoTexto','resultadoIdea','resultadoGuion'].forEach(id => { const el=document.getElementById(id); if(el){el.classList.remove('active');el.innerHTML='';} });
 }
 
 function cambiarTab(n) {
     tabActual = n;
-    for (let i = 0; i < 3; i++) {
-        document.getElementById(`tab${i}`).classList.toggle('active', i === n);
-        document.getElementById(`content${i}`).classList.toggle('active', i === n);
+    for(let i=0;i<3;i++) {
+        document.getElementById(`tab${i}`).classList.toggle('active', i===n);
+        document.getElementById(`content${i}`).classList.toggle('active', i===n);
     }
 }
 
-// ─── TAB 0: TEXTO COMUNIDAD ───
+// ─── MODAL MENSAJES ───
+async function abrirMensajes(id, nombre, color, emoji) {
+    canalActual = { id, nombre, color, emoji };
+    document.getElementById('mensajesTitle').textContent = `💬 Mensajes — ${emoji} ${nombre}`;
+    document.getElementById('mensajesCanalInfo').textContent = `Canal: ${nombre} | Últimos comentarios`;
+    document.getElementById('mensajesLista').innerHTML = '<div class="no-comentarios">⏳ Cargando comentarios...</div>';
+    document.getElementById('modalMensajes').classList.add('active');
+
+    const comentarios = await fetchComentarios(id);
+
+    if (!comentarios.length) {
+        document.getElementById('mensajesLista').innerHTML = '<div class="no-comentarios">📭 No hay comentarios recientes en este canal</div>';
+        return;
+    }
+
+    document.getElementById('mensajesLista').innerHTML = comentarios.map(c => `
+        <div class="comentario-card">
+            <div class="comentario-autor">👤 ${c.autor}</div>
+            <div class="comentario-video">📹 ${c.videoTitulo.substring(0,50)}...</div>
+            <div class="comentario-texto">"${c.texto}"</div>
+            <div class="comentario-meta">❤️ ${c.likes} likes · 📅 ${c.fecha}</div>
+            <div class="comentario-acciones">
+                <button class="btn-accion" style="background:#4CAF50;color:#000;" onclick="responderConTexto('${c.id}','${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">
+                    ✍️ Texto
+                </button>
+                <button class="btn-accion" style="background:#00d4ff;color:#000;" onclick="responderConIdea('${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">
+                    💡 Idea
+                </button>
+                <button class="btn-accion" style="background:#9B59B6;color:#fff;" onclick="responderConGuion('${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">
+                    📝 Guión
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function cerrarMensajes(e) { if(e.target===document.getElementById('modalMensajes')) document.getElementById('modalMensajes').classList.remove('active'); }
+
+function responderConTexto(comentarioId, autorEnc, textoEnc) {
+    const autor = decodeURIComponent(autorEnc);
+    const texto = decodeURIComponent(textoEnc);
+    const contexto = { id: comentarioId, autor, texto };
+    abrirModal(canalActual.id, canalActual.nombre, canalActual.color, canalActual.emoji, contexto);
+    cambiarTab(0);
+    document.getElementById('textoComu').value = `@${autor} `;
+    document.getElementById('textoComu').focus();
+}
+
+function responderConIdea(autorEnc, textoEnc) {
+    const autor = decodeURIComponent(autorEnc);
+    const texto = decodeURIComponent(textoEnc);
+    const contexto = { autor, texto };
+    abrirModal(canalActual.id, canalActual.nombre, canalActual.color, canalActual.emoji, contexto);
+    cambiarTab(1);
+    document.getElementById('ideaGuion').value = `Responder al comentario de ${autor}: "${texto.substring(0,80)}"`;
+    document.getElementById('ideaGuion').focus();
+}
+
+function responderConGuion(autorEnc, textoEnc) {
+    const autor = decodeURIComponent(autorEnc);
+    const texto = decodeURIComponent(textoEnc);
+    const contexto = { autor, texto };
+    abrirModal(canalActual.id, canalActual.nombre, canalActual.color, canalActual.emoji, contexto);
+    cambiarTab(2);
+    document.getElementById('guionCompleto').value = `[Respuesta a ${autor} que comentó: "${texto.substring(0,60)}"]\n\n`;
+    document.getElementById('guionCompleto').focus();
+}
+
+// ─── PUBLICAR TEXTO ───
 async function publicarTexto() {
     const texto = document.getElementById('textoComu').value.trim();
     if (!texto) return alert('Escribe algo primero');
     const status = document.getElementById('statusTexto');
-    status.innerHTML = '<div class="status-line loading">⏳ Publicando en la comunidad...</div>';
+    status.innerHTML = '<div class="status-line loading">⏳ Abriendo YouTube Studio...</div>';
     status.classList.add('active');
-
-    // Por ahora abre YouTube Studio comunidad — la API de comunidad requiere OAuth
-    const url = `https://studio.youtube.com/channel/${canalActual.id}/community`;
-    status.innerHTML = `<div class="status-line ok">✅ Abriendo YouTube Studio — pega tu texto ahí</div>
-    <div class="status-line" style="color:#aaa;margin-top:8px;font-size:0.8rem;">Texto copiado al portapapeles</div>`;
     navigator.clipboard.writeText(texto).catch(()=>{});
+    const url = `https://studio.youtube.com/channel/${canalActual.id}/community`;
+    status.innerHTML = `<div class="status-line ok">✅ Texto copiado — pégalo en YouTube Studio</div>`;
     window.open(url, '_blank');
 }
 
-// ─── TAB 1: IDEA DE GUIÓN ───
+// ─── GENERAR DESDE IDEA ───
 async function generarDesdeIdea() {
     const idea = document.getElementById('ideaGuion').value.trim();
     if (!idea) return alert('Escribe una idea primero');
     const status = document.getElementById('statusIdea');
     const btn = document.getElementById('btnIdea');
-    btn.disabled = true;
-    btn.textContent = '⏳ Generando...';
-    status.innerHTML = `
-        <div class="status-line loading">⏳ Enviando idea al servidor...</div>
-    `;
+    btn.disabled = true; btn.textContent = '⏳ Generando...';
+    status.innerHTML = '<div class="status-line loading">⏳ Enviando al servidor...</div>';
     status.classList.add('active');
-
     try {
-        const res = await fetch('/api/generar-video', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                canal_id: canalActual.id,
-                canal_nombre: canalActual.nombre,
-                modo: 'idea',
-                contenido: idea
-            })
-        });
+        const res = await fetch('/api/generar-video', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ canal_id: canalActual.id, canal_nombre: canalActual.nombre, modo:'idea', contenido: idea }) });
         const data = await res.json();
         if (data.success) {
-            status.innerHTML = `<div class="status-line ok">✅ Video generado y publicado</div>`;
-            const resultado = document.getElementById('resultadoIdea');
-            resultado.innerHTML = `<div>🎬 Video publicado:<br><a class="resultado-link" href="${data.url}" target="_blank">${data.url}</a></div>`;
-            resultado.classList.add('active');
-        } else {
-            status.innerHTML = `<div class="status-line error">❌ Error: ${data.error}</div>`;
-        }
-    } catch(e) {
-        status.innerHTML = `<div class="status-line error">❌ Error de conexión: ${e.message}</div>`;
-    }
-    btn.disabled = false;
-    btn.textContent = '🤖 Generar Guión y Crear Video';
+            status.innerHTML = '<div class="status-line ok">✅ Video generado y publicado</div>';
+            const r = document.getElementById('resultadoIdea');
+            r.innerHTML = `<div>🎬 <a class="resultado-link" href="${data.url}" target="_blank">${data.url}</a></div>`;
+            r.classList.add('active');
+        } else { status.innerHTML = `<div class="status-line error">❌ ${data.error}</div>`; }
+    } catch(e) { status.innerHTML = `<div class="status-line error">❌ Error: ${e.message}</div>`; }
+    btn.disabled = false; btn.textContent = '🤖 Generar Guión y Crear Video';
 }
 
-// ─── TAB 2: GUIÓN COMPLETO ───
+// ─── CREAR DESDE GUIÓN ───
 async function crearDesdeGuion() {
     const guion = document.getElementById('guionCompleto').value.trim();
     if (!guion) return alert('Escribe el guión primero');
     const status = document.getElementById('statusGuion');
     const btn = document.getElementById('btnGuion');
-    btn.disabled = true;
-    btn.textContent = '⏳ Creando video...';
-    status.innerHTML = `
-        <div class="status-line loading">⏳ Generando audio con voz del canal...</div>
-    `;
+    btn.disabled = true; btn.textContent = '⏳ Creando video...';
+    status.innerHTML = '<div class="status-line loading">⏳ Generando audio con voz del canal...</div>';
     status.classList.add('active');
-
     try {
-        const res = await fetch('/api/generar-video', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                canal_id: canalActual.id,
-                canal_nombre: canalActual.nombre,
-                modo: 'guion',
-                contenido: guion
-            })
-        });
+        const res = await fetch('/api/generar-video', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ canal_id: canalActual.id, canal_nombre: canalActual.nombre, modo:'guion', contenido: guion }) });
         const data = await res.json();
         if (data.success) {
-            status.innerHTML = `<div class="status-line ok">✅ Video creado y publicado en ${canalActual.nombre}</div>`;
-            const resultado = document.getElementById('resultadoGuion');
-            resultado.innerHTML = `<div>🎬 Video publicado:<br><a class="resultado-link" href="${data.url}" target="_blank">${data.url}</a></div>`;
-            resultado.classList.add('active');
-        } else {
-            status.innerHTML = `<div class="status-line error">❌ Error: ${data.error}</div>`;
-        }
-    } catch(e) {
-        status.innerHTML = `<div class="status-line error">❌ Error de conexión: ${e.message}</div>`;
-    }
-    btn.disabled = false;
-    btn.textContent = '🎬 Crear Video con Este Guión';
+            status.innerHTML = `<div class="status-line ok">✅ Video publicado en ${canalActual.nombre}</div>`;
+            const r = document.getElementById('resultadoGuion');
+            r.innerHTML = `<div>🎬 <a class="resultado-link" href="${data.url}" target="_blank">${data.url}</a></div>`;
+            r.classList.add('active');
+        } else { status.innerHTML = `<div class="status-line error">❌ ${data.error}</div>`; }
+    } catch(e) { status.innerHTML = `<div class="status-line error">❌ Error: ${e.message}</div>`; }
+    btn.disabled = false; btn.textContent = '🎬 Crear Video con Este Guión';
 }
 
 cargarDatos();
