@@ -14,7 +14,8 @@
         .total-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 15px; padding: 25px; text-align: center; border: 1px solid #333; }
         .total-card .numero { font-size: 2.5rem; font-weight: bold; color: #00d4ff; }
         .total-card .label { color: #888; margin-top: 5px; font-size: 0.9rem; }
-        .canales { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 30px; }
+        .seccion-titulo { padding: 20px 30px 5px; font-size: 1rem; color: #555; font-weight: bold; letter-spacing: 1px; }
+        .canales { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 10px 30px 30px; }
         .canal-card { background: #1a1a1a; border-radius: 15px; padding: 25px; border: 1px solid #333; transition: transform 0.2s; }
         .canal-card:hover { transform: translateY(-3px); border-color: #555; }
         .canal-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
@@ -34,7 +35,7 @@
         .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-publicar { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a1a2e, #333); border: 1px solid #555; transition: all 0.2s; }
         .btn-publicar:hover { background: linear-gradient(135deg, #333, #555); }
-        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); border: 1px solid #4CAF50; transition: all 0.2s; position: relative; }
+        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); border: 1px solid #4CAF50; transition: all 0.2s; }
         .btn-mensajes:hover { background: linear-gradient(135deg, #1a3a1a, #2a4a2a); }
         .loading { text-align: center; padding: 50px; color: #888; font-size: 1.2rem; }
         .refresh-btn { position: fixed; bottom: 30px; right: 30px; background: #00d4ff; color: #000; border: none; border-radius: 50px; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 100; }
@@ -59,7 +60,6 @@
         .btn-generar:disabled { opacity: 0.6; cursor: not-allowed; }
         .status-box { background: #111; border-radius: 10px; padding: 15px; margin-top: 15px; font-size: 0.85rem; color: #aaa; display: none; }
         .status-box.active { display: block; }
-        .status-line { margin-bottom: 6px; }
         .status-line.ok { color: #4CAF50; }
         .status-line.error { color: #FF6B6B; }
         .status-line.loading { color: #00d4ff; }
@@ -80,14 +80,20 @@
 <body>
 <div class="header">
     <h1>📺 YouTube Dashboard</h1>
-    <p>Panel de control — Todos los canales en tiempo real</p>
+    <p>Panel de control — 16 canales en tiempo real</p>
 </div>
 <div class="totales">
     <div class="total-card"><div class="numero" id="total-subs">--</div><div class="label">🔔 Suscriptores Totales</div></div>
     <div class="total-card"><div class="numero" id="total-vistas">--</div><div class="label">👁️ Vistas Totales</div></div>
     <div class="total-card"><div class="numero" id="total-videos">--</div><div class="label">🎬 Videos Publicados</div></div>
 </div>
-<div id="canales" class="canales"><div class="loading">⏳ Cargando...</div></div>
+
+<div class="seccion-titulo">📺 CANALES ACTIVOS (9)</div>
+<div id="canales-activos" class="canales"><div class="loading">⏳ Cargando...</div></div>
+
+<div class="seccion-titulo">🆕 CANALES NUEVOS (7)</div>
+<div id="canales-nuevos" class="canales"><div class="loading">⏳ Cargando...</div></div>
+
 <div class="last-update" id="last-update"></div>
 <button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button>
 
@@ -107,7 +113,7 @@
         </div>
         <div class="tab-content active" id="content0">
             <label class="input-label">Escribe tu publicación para la comunidad del canal:</label>
-            <textarea id="textoComu" placeholder="Ej: ¿Cuál es tu mayor reto para bajar de peso? Cuéntanos 👇"></textarea>
+            <textarea id="textoComu" placeholder="Ej: ¿Cuál es tu mayor reto? Cuéntanos 👇"></textarea>
             <button class="btn-generar" onclick="publicarTexto()" style="background:#4CAF50;color:#000;">📢 Publicar en Comunidad</button>
             <div class="status-box" id="statusTexto"></div>
         </div>
@@ -142,7 +148,8 @@
 
 <script>
 const API_KEY = "AIzaSyBkOvvnGV2v_sCIpCFcZA6lGHBLglrDS2I";
-const CANALES = [
+
+const CANALES_ACTIVOS = [
     { nombre: "Fit Tips Latino",      id: "UCtCF9WMqwa5vCjgLNyx5zaw", color: "#FF6B6B", emoji: "💪" },
     { nombre: "Un Cafe con el Mundo", id: "UCbRqsnb4vOGQtEW5JDtDE6Q", color: "#4ECDC4", emoji: "☕" },
     { nombre: "Como Hacer Dinero",    id: "UCbebqeZeD8WdSZypfxb7Tnw", color: "#45B7D1", emoji: "💰" },
@@ -154,6 +161,17 @@ const CANALES = [
     { nombre: "Come Muevete y Sana",  id: "UCN8GZhEYvJXdIkXpoBLfY4w", color: "#F1948A", emoji: "🏃" },
 ];
 
+const CANALES_NUEVOS = [
+    { nombre: "Fe y Abundancia",                  id: "UCefqr_OtXH0c8yvOIuSIs8g", color: "#FFD700", emoji: "🙏" },
+    { nombre: "Historia Sin Censura",             id: "UCrHdus3_spVg2fYDAuE97AQ", color: "#8B4513", emoji: "🌍" },
+    { nombre: "Deporte Dominicanos Sin Fronteras",id: "UC-OLqHHiL9EwKBNFjr8uNEQ", color: "#002D62", emoji: "⚾" },
+    { nombre: "Mentalidad Ganadora",              id: "UCBg1Ilkd_rOXd98BFwtllhA", color: "#FFD700", emoji: "🏆" },
+    { nombre: "Crianza Real",                     id: "UCDwuOde7WNjvRzVFTAPDLfQ", color: "#4FC3F7", emoji: "👨‍👩‍👧" },
+    { nombre: "tu.Productividad",                 id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "⚡" },
+    { nombre: "sicologiasinfiltro",               id: "UCJtuIFNfcNFvRBlEu2cRkJw", color: "#9C27B0", emoji: "🧠" },
+];
+
+const TODOS_CANALES = [...CANALES_ACTIVOS, ...CANALES_NUEVOS];
 let canalActual = null;
 let comentarioContexto = null;
 
@@ -165,6 +183,54 @@ async function fetchCanalStats(canal) {
     const d = await r.json();
     const s = d.items?.[0]?.statistics||{};
     return {...canal, suscriptores:parseInt(s.subscriberCount||0), vistas:parseInt(s.viewCount||0), videos:parseInt(s.videoCount||0)};
+}
+
+function renderCanal(c) {
+    return `
+        <div class="canal-card" style="border-top:3px solid ${c.color}">
+            <div class="canal-header">
+                <div class="canal-emoji">${c.emoji}</div>
+                <div><div class="canal-nombre">${c.nombre}</div><div class="canal-status">● Activo — publicación diaria</div></div>
+            </div>
+            <div class="metrics">
+                <div class="metric"><div class="valor" style="color:${c.color}">${fmt(c.suscriptores)}</div><div class="mlabel">Suscriptores</div></div>
+                <div class="metric"><div class="valor" style="color:${c.color}">${fmt(c.vistas)}</div><div class="mlabel">Vistas</div></div>
+                <div class="metric"><div class="valor" style="color:${c.color}">${c.videos}</div><div class="mlabel">Videos</div></div>
+            </div>
+            <div class="progress-section">
+                <div class="progress-label"><span>🔔 Subs meta</span><span>${c.suscriptores}/1,000 (${pct(c.suscriptores,1000)}%)</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.suscriptores,1000)}%;background:${c.color}"></div></div>
+                <div class="progress-label"><span>⏱️ Horas visualización</span><span>${fmt(c.vistas)}/400K</span></div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.vistas,400000)}%;background:${c.color}"></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;">
+                <a href="https://www.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:${c.color};color:#000;">📺 Ver Canal</a>
+                <a href="https://studio.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:#222;color:#fff;border:1px solid ${c.color};">🎬 YouTube Studio</a>
+            </div>
+            <div class="btn-row">
+                <button class="btn-publicar" onclick="abrirModal('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">📹 Publicar Video</button>
+                <button class="btn-mensajes" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">💬 Mensajes</button>
+            </div>
+        </div>`;
+}
+
+async function cargarDatos() {
+    document.getElementById('canales-activos').innerHTML = '<div class="loading">⏳ Cargando...</div>';
+    document.getElementById('canales-nuevos').innerHTML = '<div class="loading">⏳ Cargando...</div>';
+    try {
+        const todos = await Promise.all(TODOS_CANALES.map(fetchCanalStats));
+        const totalSubs = todos.reduce((s,c)=>s+c.suscriptores,0);
+        const totalVistas = todos.reduce((s,c)=>s+c.vistas,0);
+        const totalVideos = todos.reduce((s,c)=>s+c.videos,0);
+        document.getElementById('total-subs').textContent = fmt(totalSubs);
+        document.getElementById('total-vistas').textContent = fmt(totalVistas);
+        document.getElementById('total-videos').textContent = fmt(totalVideos);
+        document.getElementById('canales-activos').innerHTML = todos.slice(0,9).map(renderCanal).join('');
+        document.getElementById('canales-nuevos').innerHTML = todos.slice(9).map(renderCanal).join('');
+        document.getElementById('last-update').textContent = '🕐 ' + new Date().toLocaleString('es-DO');
+    } catch(e) {
+        document.getElementById('canales-activos').innerHTML = '<div class="loading">❌ Error: ' + e.message + '</div>';
+    }
 }
 
 async function fetchComentarios(canalId) {
@@ -184,43 +250,6 @@ async function fetchComentarios(canalId) {
         }
         return todos;
     } catch(e){ return []; }
-}
-
-async function cargarDatos() {
-    document.getElementById('canales').innerHTML='<div class="loading">⏳ Actualizando...</div>';
-    try {
-        const res = await Promise.all(CANALES.map(fetchCanalStats));
-        document.getElementById('total-subs').textContent=fmt(res.reduce((s,c)=>s+c.suscriptores,0));
-        document.getElementById('total-vistas').textContent=fmt(res.reduce((s,c)=>s+c.vistas,0));
-        document.getElementById('total-videos').textContent=fmt(res.reduce((s,c)=>s+c.videos,0));
-        document.getElementById('canales').innerHTML=res.map(c=>`
-            <div class="canal-card" style="border-top:3px solid ${c.color}">
-                <div class="canal-header">
-                    <div class="canal-emoji">${c.emoji}</div>
-                    <div><div class="canal-nombre">${c.nombre}</div><div class="canal-status">● Activo — publicación diaria</div></div>
-                </div>
-                <div class="metrics">
-                    <div class="metric"><div class="valor" style="color:${c.color}">${fmt(c.suscriptores)}</div><div class="mlabel">Suscriptores</div></div>
-                    <div class="metric"><div class="valor" style="color:${c.color}">${fmt(c.vistas)}</div><div class="mlabel">Vistas</div></div>
-                    <div class="metric"><div class="valor" style="color:${c.color}">${c.videos}</div><div class="mlabel">Videos</div></div>
-                </div>
-                <div class="progress-section">
-                    <div class="progress-label"><span>🔔 Subs meta</span><span>${c.suscriptores}/1,000 (${pct(c.suscriptores,1000)}%)</span></div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.suscriptores,1000)}%;background:${c.color}"></div></div>
-                    <div class="progress-label"><span>⏱️ Horas visualización</span><span>${fmt(c.vistas)}/400K</span></div>
-                    <div class="progress-bar"><div class="progress-fill" style="width:${pct(c.vistas,400000)}%;background:${c.color}"></div></div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px;">
-                    <a href="https://www.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:${c.color};color:#000;">📺 Ver Canal</a>
-                    <a href="https://studio.youtube.com/channel/${c.id}" target="_blank" class="btn-canal" style="background:#222;color:#fff;border:1px solid ${c.color};">🎬 YouTube Studio</a>
-                </div>
-                <div class="btn-row">
-                    <button class="btn-publicar" onclick="abrirModal('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">📹 Publicar Video</button>
-                    <button class="btn-mensajes" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">💬 Mensajes</button>
-                </div>
-            </div>`).join('');
-        document.getElementById('last-update').textContent='🕐 '+new Date().toLocaleString('es-DO');
-    } catch(e){ document.getElementById('canales').innerHTML='<div class="loading">❌ Error: '+e.message+'</div>'; }
 }
 
 function abrirModal(id,nombre,color,emoji,contexto=null){
@@ -298,7 +327,7 @@ async function publicarTexto(){
 async function generarDesdeIdea(){
     const idea=document.getElementById('ideaGuion').value.trim(); if(!idea)return alert('Escribe una idea primero');
     const status=document.getElementById('statusIdea'),btn=document.getElementById('btnIdea');
-    btn.disabled=true; btn.textContent='⏳ Generando video...';
+    btn.disabled=true; btn.textContent='⏳ Procesando...';
     status.innerHTML='<div class="status-line loading">⏳ Procesando — puede tomar 3-5 minutos...</div>'; status.classList.add('active');
     try {
         const res=await fetch('/api/generar-video',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({canal_id:canalActual.id,canal_nombre:canalActual.nombre,modo:'idea',contenido:idea})});
