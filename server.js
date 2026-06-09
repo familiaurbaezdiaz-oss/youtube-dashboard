@@ -10,15 +10,22 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
  
 const CANALES_CONFIG = {
-    "UCtCF9WMqwa5vCjgLNyx5zaw": { carpeta: "fitsecrets",        nombre: "Fit Tips Latino" },
-    "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",       nombre: "Un Cafe con el Mundo" },
-    "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",         nombre: "Como Hacer Dinero" },
-    "UC7uB3kv6xkRnzBqOuYK0rVQ": { carpeta: "finanzasinlimites", nombre: "Finanzas Sin Limites" },
-    "UCVdxFnplEkh8rs_L9GSCFaw": { carpeta: "dinerosimentiras",  nombre: "Dinero Sin Mentiras" },
-    "UCMeGTxwHiUHZV7F6fFS12Qw": { carpeta: "mentedigital",      nombre: "Mente Digital" },
-    "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "inverteyliberate",  nombre: "Invierte y Liberate" },
-    "UCz6JMCRoZTqZNTAPRd7alDQ": { carpeta: "secretosdesalud",   nombre: "Secretos de Salud" },
-    "UCN8GZhEYvJXdIkXpoBLfY4w": { carpeta: "comemueveteysana",  nombre: "Come Muevete y Sana" },
+    "UCtCF9WMqwa5vCjgLNyx5zaw": { carpeta: "fitsecrets",          nombre: "Fit Tips Latino" },
+    "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",         nombre: "Un Cafe con el Mundo" },
+    "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",           nombre: "Como Hacer Dinero" },
+    "UC7uB3kv6xkRnzBqOuYK0rVQ": { carpeta: "finanzasinlimites",   nombre: "Finanzas Sin Limites" },
+    "UCVdxFnplEkh8rs_L9GSCFaw": { carpeta: "dinerosimentiras",    nombre: "Dinero Sin Mentiras" },
+    "UCMeGTxwHiUHZV7F6fFS12Qw": { carpeta: "mentedigital",        nombre: "Mente Digital" },
+    "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "inverteyliberate",    nombre: "Invierte y Liberate" },
+    "UCz6JMCRoZTqZNTAPRd7alDQ": { carpeta: "secretosdesalud",     nombre: "Secretos de Salud" },
+    "UCN8GZhEYvJXdIkXpoBLfY4w": { carpeta: "comemueveteysana",    nombre: "Come Muevete y Sana" },
+    "UC-OLqHHiL9EwKBNFjr8uNEQ": { carpeta: "deportedominicanos",  nombre: "Deporte Dominicanos Sin Fronteras" },
+    "UCefqr_OtXH0c8yvOIuSIs8g": { carpeta: "feyabundancia",       nombre: "Fe y Abundancia" },
+    "UCrHdus3_spVg2fYDAuE97AQ": { carpeta: "historiacensura",     nombre: "Historia Sin Censura" },
+    "UCBg1Ilkd_rOXd98BFwtllhA": { carpeta: "mentalidadganadora",  nombre: "Mentalidad Ganadora" },
+    "UCDwuOde7WNjvRzVFTAPDLfQ": { carpeta: "crianzareal",         nombre: "Crianza Real" },
+    "UCv6vYEGZkvQLJP22N0VVXrA": { carpeta: "tuproductividad",     nombre: "tu.Productividad" },
+    "UCJtuIFNfcNFvRBlEu2cRkJw": { carpeta: "psicologiasinfiltros",nombre: "Psicologia Sin Filtros" },
 };
  
 const BASE = "C:\\Users\\hanse\\Desktop\\PROYECTOS";
