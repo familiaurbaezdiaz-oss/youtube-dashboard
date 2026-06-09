@@ -35,8 +35,12 @@
         .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .btn-publicar { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a1a2e, #333); border: 1px solid #555; transition: all 0.2s; }
         .btn-publicar:hover { background: linear-gradient(135deg, #333, #555); }
-        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); border: 1px solid #4CAF50; transition: all 0.2s; }
+        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); border: 1px solid #4CAF50; transition: all 0.2s; position: relative; }
         .btn-mensajes:hover { background: linear-gradient(135deg, #1a3a1a, #2a4a2a); }
+        .burbuja-comentarios { position: absolute; top: -8px; right: -8px; background: #FF6B6B; color: #fff; border-radius: 50%; min-width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; padding: 0 4px; border: 2px solid #1a1a1a; animation: pulsar 1.5s infinite; cursor: pointer; z-index: 10; }
+        @keyframes pulsar { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
+        .burbuja-tooltip { position: absolute; bottom: 110%; right: 0; background: #222; border: 1px solid #FF6B6B; border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; color: #fff; white-space: nowrap; max-width: 250px; white-space: normal; z-index: 100; display: none; pointer-events: none; }
+        .btn-mensajes:hover .burbuja-tooltip { display: block; }
         .loading { text-align: center; padding: 50px; color: #888; font-size: 1.2rem; }
         .refresh-btn { position: fixed; bottom: 30px; right: 30px; background: #00d4ff; color: #000; border: none; border-radius: 50px; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 100; }
         .last-update { text-align: center; color: #555; font-size: 0.8rem; padding: 10px; }
@@ -68,13 +72,16 @@
         .resultado-link { color: #4CAF50; word-break: break-all; font-size: 0.85rem; }
         .comentario-card { background: #111; border-radius: 12px; padding: 15px; margin-bottom: 12px; border: 1px solid #222; }
         .comentario-autor { font-size: 0.85rem; font-weight: bold; color: #00d4ff; margin-bottom: 5px; }
-        .comentario-video { font-size: 0.75rem; color: #666; margin-bottom: 8px; }
+        .comentario-video { font-size: 0.75rem; color: #666; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+        .comentario-video a { color: #888; text-decoration: none; }
+        .comentario-video a:hover { color: #00d4ff; }
         .comentario-texto { font-size: 0.9rem; color: #ddd; margin-bottom: 12px; line-height: 1.4; }
         .comentario-meta { font-size: 0.75rem; color: #555; margin-bottom: 12px; }
         .comentario-acciones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .btn-accion { padding: 8px; border-radius: 8px; border: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
         .btn-accion:hover { opacity: 0.8; }
         .no-comentarios { text-align: center; color: #555; padding: 30px; font-size: 0.9rem; }
+        .badge-nuevo { background: #FF6B6B; color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -162,18 +169,19 @@ const CANALES_ACTIVOS = [
 ];
 
 const CANALES_NUEVOS = [
-    { nombre: "Fe y Abundancia",                  id: "UCefqr_OtXH0c8yvOIuSIs8g", color: "#FFD700", emoji: "🙏" },
-    { nombre: "Historia Sin Censura",             id: "UCrHdus3_spVg2fYDAuE97AQ", color: "#8B4513", emoji: "🌍" },
-    { nombre: "Deporte Dominicanos Sin Fronteras",id: "UC-OLqHHiL9EwKBNFjr8uNEQ", color: "#002D62", emoji: "⚾" },
-    { nombre: "Mentalidad Ganadora",              id: "UCBg1Ilkd_rOXd98BFwtllhA", color: "#FFD700", emoji: "🏆" },
-    { nombre: "Crianza Real",                     id: "UCDwuOde7WNjvRzVFTAPDLfQ", color: "#4FC3F7", emoji: "👨‍👩‍👧" },
-    { nombre: "tu.Productividad",                 id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "⚡" },
-    { nombre: "sicologiasinfiltro",               id: "UCJtuIFNfcNFvRBlEu2cRkJw", color: "#9C27B0", emoji: "🧠" },
+    { nombre: "Fe y Abundancia",                   id: "UCefqr_OtXH0c8yvOIuSIs8g", color: "#FFD700", emoji: "🙏" },
+    { nombre: "Historia Sin Censura",              id: "UCrHdus3_spVg2fYDAuE97AQ", color: "#8B4513", emoji: "🌍" },
+    { nombre: "Deporte Dominicanos Sin Fronteras", id: "UC-OLqHHiL9EwKBNFjr8uNEQ", color: "#002D62", emoji: "⚾" },
+    { nombre: "Mentalidad Ganadora",               id: "UCBg1Ilkd_rOXd98BFwtllhA", color: "#FFD700", emoji: "🏆" },
+    { nombre: "Crianza Real",                      id: "UCDwuOde7WNjvRzVFTAPDLfQ", color: "#4FC3F7", emoji: "👨‍👩‍👧" },
+    { nombre: "tu.Productividad",                  id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "⚡" },
+    { nombre: "Psicologia Sin Filtros",            id: "UCJtuIFNfcNFvRBlEu2cRkJw", color: "#9C27B0", emoji: "🧠" },
 ];
 
 const TODOS_CANALES = [...CANALES_ACTIVOS, ...CANALES_NUEVOS];
 let canalActual = null;
 let comentarioContexto = null;
+const comentariosPorCanal = {};
 
 function fmt(n) { if(!n||n==='0')return'0';n=parseInt(n);if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toString(); }
 function pct(v,m){ return !v?'0.0':Math.min((parseInt(v)/m)*100,100).toFixed(1); }
@@ -185,7 +193,51 @@ async function fetchCanalStats(canal) {
     return {...canal, suscriptores:parseInt(s.subscriberCount||0), vistas:parseInt(s.viewCount||0), videos:parseInt(s.videoCount||0)};
 }
 
+async function fetchComentariosRecientes(canalId) {
+    try {
+        const rV = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${canalId}&maxResults=5&order=date&type=video&key=${API_KEY}`);
+        const dV = await rV.json();
+        const videos = dV.items||[];
+        let todos = [];
+        for(const v of videos.slice(0,3)){
+            const vid=v.id.videoId; if(!vid) continue;
+            const rC = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${vid}&maxResults=5&order=time&key=${API_KEY}`);
+            const dC = await rC.json();
+            if(dC.items) dC.items.forEach(item=>{
+                const c=item.snippet.topLevelComment.snippet;
+                todos.push({
+                    id:item.id,
+                    videoId:vid,
+                    videoTitulo:v.snippet.title,
+                    autor:c.authorDisplayName,
+                    texto:c.textDisplay,
+                    likes:c.likeCount,
+                    fecha:new Date(c.publishedAt).toLocaleDateString('es-DO'),
+                    timestamp: new Date(c.publishedAt).getTime()
+                });
+            });
+        }
+        todos.sort((a,b)=>b.timestamp-a.timestamp);
+        return todos;
+    } catch(e){ return []; }
+}
+
 function renderCanal(c) {
+    const numComentarios = (comentariosPorCanal[c.id]||[]).length;
+    const primerComentario = (comentariosPorCanal[c.id]||[])[0];
+    const tooltipTexto = primerComentario 
+        ? `📹 ${primerComentario.videoTitulo.substring(0,40)}...\n💬 ${primerComentario.autor}: "${primerComentario.texto.substring(0,50)}..."` 
+        : '';
+
+    const burbuja = numComentarios > 0 ? `
+        <span class="burbuja-comentarios" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}');event.stopPropagation();" title="${tooltipTexto.replace(/"/g,'&quot;')}">
+            ${numComentarios}
+            <span class="burbuja-tooltip">
+                <strong style="color:#FF6B6B">${numComentarios} comentario${numComentarios>1?'s':''} nuevo${numComentarios>1?'s':''}</strong><br>
+                ${primerComentario ? `<span style="color:#888">📹 ${primerComentario.videoTitulo.substring(0,45)}...</span><br><span style="color:#ddd">👤 ${primerComentario.autor}: "${primerComentario.texto.substring(0,60)}..."</span>` : ''}
+            </span>
+        </span>` : '';
+
     return `
         <div class="canal-card" style="border-top:3px solid ${c.color}">
             <div class="canal-header">
@@ -209,7 +261,9 @@ function renderCanal(c) {
             </div>
             <div class="btn-row">
                 <button class="btn-publicar" onclick="abrirModal('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">📹 Publicar Video</button>
-                <button class="btn-mensajes" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">💬 Mensajes</button>
+                <button class="btn-mensajes" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}')">
+                    💬 Mensajes${burbuja}
+                </button>
             </div>
         </div>`;
 }
@@ -225,31 +279,19 @@ async function cargarDatos() {
         document.getElementById('total-subs').textContent = fmt(totalSubs);
         document.getElementById('total-vistas').textContent = fmt(totalVistas);
         document.getElementById('total-videos').textContent = fmt(totalVideos);
+
+        // Cargar comentarios en paralelo para todos los canales
+        await Promise.all(todos.map(async c => {
+            const comentarios = await fetchComentariosRecientes(c.id);
+            comentariosPorCanal[c.id] = comentarios;
+        }));
+
         document.getElementById('canales-activos').innerHTML = todos.slice(0,9).map(renderCanal).join('');
         document.getElementById('canales-nuevos').innerHTML = todos.slice(9).map(renderCanal).join('');
         document.getElementById('last-update').textContent = '🕐 ' + new Date().toLocaleString('es-DO');
     } catch(e) {
         document.getElementById('canales-activos').innerHTML = '<div class="loading">❌ Error: ' + e.message + '</div>';
     }
-}
-
-async function fetchComentarios(canalId) {
-    try {
-        const rV = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${canalId}&maxResults=10&order=date&type=video&key=${API_KEY}`);
-        const dV = await rV.json();
-        const videos = dV.items||[];
-        let todos = [];
-        for(const v of videos.slice(0,5)){
-            const vid=v.id.videoId; if(!vid) continue;
-            const rC = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${vid}&maxResults=10&order=time&key=${API_KEY}`);
-            const dC = await rC.json();
-            if(dC.items) dC.items.forEach(item=>{
-                const c=item.snippet.topLevelComment.snippet;
-                todos.push({id:item.id,videoId:vid,videoTitulo:v.snippet.title,autor:c.authorDisplayName,texto:c.textDisplay,likes:c.likeCount,fecha:new Date(c.publishedAt).toLocaleDateString('es-DO')});
-            });
-        }
-        return todos;
-    } catch(e){ return []; }
 }
 
 function abrirModal(id,nombre,color,emoji,contexto=null){
@@ -281,14 +323,27 @@ async function abrirMensajes(id,nombre,color,emoji){
     canalActual={id,nombre,color,emoji};
     document.getElementById('mensajesTitle').textContent=`💬 Mensajes — ${emoji} ${nombre}`;
     document.getElementById('mensajesCanalInfo').textContent=`Canal: ${nombre} | Últimos comentarios`;
-    document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">⏳ Cargando comentarios...</div>';
     document.getElementById('modalMensajes').classList.add('active');
-    const comentarios=await fetchComentarios(id);
-    if(!comentarios.length){document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">📭 No hay comentarios recientes</div>';return;}
+
+    // Usar comentarios ya cargados si existen
+    let comentarios = comentariosPorCanal[id];
+    if(!comentarios) {
+        document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">⏳ Cargando comentarios...</div>';
+        comentarios = await fetchComentariosRecientes(id);
+        comentariosPorCanal[id] = comentarios;
+    }
+
+    if(!comentarios.length){
+        document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">📭 No hay comentarios recientes</div>';
+        return;
+    }
+
     document.getElementById('mensajesLista').innerHTML=comentarios.map(c=>`
         <div class="comentario-card">
             <div class="comentario-autor">👤 ${c.autor}</div>
-            <div class="comentario-video">📹 ${c.videoTitulo.substring(0,50)}...</div>
+            <div class="comentario-video">
+                📹 <a href="https://youtube.com/watch?v=${c.videoId}" target="_blank">${c.videoTitulo.substring(0,55)}${c.videoTitulo.length>55?'...':''}</a>
+            </div>
             <div class="comentario-texto">"${c.texto}"</div>
             <div class="comentario-meta">❤️ ${c.likes} likes · 📅 ${c.fecha}</div>
             <div class="comentario-acciones">
@@ -298,6 +353,7 @@ async function abrirMensajes(id,nombre,color,emoji){
             </div>
         </div>`).join('');
 }
+
 function cerrarMensajes(e){if(e.target===document.getElementById('modalMensajes'))document.getElementById('modalMensajes').classList.remove('active');}
 
 function responderConTexto(id,autorEnc,textoEnc){
@@ -359,7 +415,7 @@ async function crearDesdeGuion(){
 }
 
 cargarDatos();
-setInterval(cargarDatos,300000);
+setInterval(cargarDatos, 300000);
 </script>
 </body>
 </html>
