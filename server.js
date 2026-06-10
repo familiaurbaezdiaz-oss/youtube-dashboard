@@ -64,7 +64,9 @@ from datetime import datetime
  
 main_content = open(r"${carpeta}\\main.py", encoding='utf-8').read()
 COLOR_CANAL = main_content.split('COLOR_CANAL = "')[1].split('"')[0]
-LOGO_CANAL = main_content.split('LOGO_CANAL = "')[1].split('"')[0]
+import re
+logo_match = re.search(r'LOGO_CANAL\\s*=\\s*r?"([^"]+)"', main_content)
+LOGO_CANAL = logo_match.group(1) if logo_match else ""
 NOMBRE_CANAL = "${config.nombre}"
 modo = "${modo}"
 contenido = "${contenidoEscapado}"
@@ -127,7 +129,8 @@ else:
     exec(`"${PYTHON_GLOBAL}" "${tempFile}"`, { cwd: carpeta, timeout: 600000, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }, (err, stdout, stderr) => {
         if (err) {
             console.error(`Error ${config.nombre}:`, err.message);
-            if (stderr) console.error('STDERR:', stderr.substring(0, 500));
+            if (stderr) console.error('STDERR COMPLETO:', stderr);
+            if (stdout) console.error('STDOUT COMPLETO:', stdout);
         } else {
             const ok = stdout.split('\n').find(l => l.startsWith('SUCCESS:'));
             if (ok) {
@@ -137,7 +140,8 @@ else:
                 console.log(`Output: ${stdout.substring(0, 500)}`);
             }
         }
-        try { fs.unlinkSync(tempFile); } catch(e) {}
+        
+        // // try { fs.unlinkSync(tempFile); } catch(e) {}
     });
 });
  
