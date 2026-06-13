@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -33,13 +33,13 @@
         .btn-canal { display: block; text-align: center; padding: 10px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; text-decoration: none; transition: opacity 0.2s; cursor: pointer; border: none; }
         .btn-canal:hover { opacity: 0.8; }
         .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-        .btn-publicar { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a1a2e, #333); border: 1px solid #555; transition: all 0.2s; }
+        .btn-publicar { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 1px solid #555; color: #fff; background: linear-gradient(135deg, #1a1a2e, #333); transition: all 0.2s; }
         .btn-publicar:hover { background: linear-gradient(135deg, #333, #555); }
-        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: none; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); border: 1px solid #4CAF50; transition: all 0.2s; position: relative; }
+        .btn-mensajes { width: 100%; padding: 11px; border-radius: 10px; font-size: 0.85rem; font-weight: bold; cursor: pointer; border: 1px solid #4CAF50; color: #fff; background: linear-gradient(135deg, #1a2e1a, #1a3a1a); transition: all 0.2s; position: relative; }
         .btn-mensajes:hover { background: linear-gradient(135deg, #1a3a1a, #2a4a2a); }
         .burbuja-comentarios { position: absolute; top: -8px; right: -8px; background: #FF6B6B; color: #fff; border-radius: 50%; min-width: 22px; height: 22px; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; font-weight: bold; padding: 0 4px; border: 2px solid #1a1a1a; animation: pulsar 1.5s infinite; cursor: pointer; z-index: 10; }
         @keyframes pulsar { 0%,100%{transform:scale(1);} 50%{transform:scale(1.15);} }
-        .burbuja-tooltip { position: absolute; bottom: 110%; right: 0; background: #222; border: 1px solid #FF6B6B; border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; color: #fff; white-space: nowrap; max-width: 250px; white-space: normal; z-index: 100; display: none; pointer-events: none; }
+        .burbuja-tooltip { position: absolute; bottom: 110%; right: 0; background: #222; border: 1px solid #FF6B6B; border-radius: 8px; padding: 8px 12px; font-size: 0.75rem; color: #fff; white-space: normal; max-width: 250px; z-index: 100; display: none; pointer-events: none; }
         .btn-mensajes:hover .burbuja-tooltip { display: block; }
         .loading { text-align: center; padding: 50px; color: #888; font-size: 1.2rem; }
         .refresh-btn { position: fixed; bottom: 30px; right: 30px; background: #00d4ff; color: #000; border: none; border-radius: 50px; padding: 15px 25px; font-weight: bold; cursor: pointer; font-size: 0.9rem; z-index: 100; }
@@ -81,7 +81,6 @@
         .btn-accion { padding: 8px; border-radius: 8px; border: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
         .btn-accion:hover { opacity: 0.8; }
         .no-comentarios { text-align: center; color: #555; padding: 30px; font-size: 0.9rem; }
-        .badge-nuevo { background: #FF6B6B; color: #fff; font-size: 0.65rem; padding: 2px 6px; border-radius: 10px; margin-left: 6px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -114,7 +113,7 @@
         <div class="modal-canal-info" id="modalCanalInfo"></div>
         <div id="modalContextoComentario" style="display:none;background:#0a2a0a;border:1px solid #4CAF50;border-radius:10px;padding:12px;margin-bottom:15px;font-size:0.85rem;color:#aaa;"></div>
         <div class="opciones-tabs">
-            <div class="tab-btn active" onclick="cambiarTab(0)" id="tab0">✍️ Texto<br>Comunidad</div>
+            <div class="tab-btn active" onclick="cambiarTab(0)" id="tab0">✏️ Texto<br>Comunidad</div>
             <div class="tab-btn" onclick="cambiarTab(1)" id="tab1">💡 Idea<br>de Guión</div>
             <div class="tab-btn" onclick="cambiarTab(2)" id="tab2">📝 Guión<br>Completo</div>
         </div>
@@ -161,9 +160,9 @@ const CANALES_ACTIVOS = [
     { nombre: "Un Cafe con el Mundo", id: "UCbRqsnb4vOGQtEW5JDtDE6Q", color: "#4ECDC4", emoji: "☕" },
     { nombre: "Como Hacer Dinero",    id: "UCbebqeZeD8WdSZypfxb7Tnw", color: "#45B7D1", emoji: "💰" },
     { nombre: "Finanzas Sin Limites", id: "UC7uB3kv6xkRnzBqOuYK0rVQ", color: "#96CEB4", emoji: "📈" },
-    { nombre: "Dinero Sin Mentiras",  id: "UCVdxFnplEkh8rs_L9GSCFaw", color: "#FFEAA7", emoji: "🔥" },
+    { nombre: "Dinero Sin Mentiras",  id: "UCT1irBNP1JR5O0UD1gcfbOA", color: "#FFEAA7", emoji: "🔥" },
     { nombre: "Mente Digital",        id: "UCMeGTxwHiUHZV7F6fFS12Qw", color: "#DDA0DD", emoji: "🧠" },
-    { nombre: "Invierte y Liberate",  id: "UCT1irBNP1JR5O0UD1gcfbOA", color: "#F7DC6F", emoji: "💎" },
+    { nombre: "Invierte y Liberate",  id: "UCVdxFnplEkh8rs_L9GSCFaw", color: "#F7DC6F", emoji: "💎" },
     { nombre: "Secretos de Salud",    id: "UCz6JMCRoZTqZNTAPRd7alDQ", color: "#82E0AA", emoji: "🥗" },
     { nombre: "Come Muevete y Sana",  id: "UCN8GZhEYvJXdIkXpoBLfY4w", color: "#F1948A", emoji: "🏃" },
 ];
@@ -174,7 +173,7 @@ const CANALES_NUEVOS = [
     { nombre: "Deporte Dominicanos Sin Fronteras", id: "UC-OLqHHiL9EwKBNFjr8uNEQ", color: "#002D62", emoji: "⚾" },
     { nombre: "Mentalidad Ganadora",               id: "UCBg1Ilkd_rOXd98BFwtllhA", color: "#FFD700", emoji: "🏆" },
     { nombre: "Crianza Real",                      id: "UCDwuOde7WNjvRzVFTAPDLfQ", color: "#4FC3F7", emoji: "👨‍👩‍👧" },
-    { nombre: "tu.Productividad",                  id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "⚡" },
+    { nombre: "Tus Historias",                     id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "🎬" },
     { nombre: "Psicologia Sin Filtros",            id: "UCJtuIFNfcNFvRBlEu2cRkJw", color: "#9C27B0", emoji: "🧠" },
 ];
 
@@ -206,8 +205,7 @@ async function fetchComentariosRecientes(canalId) {
             if(dC.items) dC.items.forEach(item=>{
                 const c=item.snippet.topLevelComment.snippet;
                 todos.push({
-                    id:item.id,
-                    videoId:vid,
+                    id:item.id, videoId:vid,
                     videoTitulo:v.snippet.title,
                     autor:c.authorDisplayName,
                     texto:c.textDisplay,
@@ -225,15 +223,11 @@ async function fetchComentariosRecientes(canalId) {
 function renderCanal(c) {
     const numComentarios = (comentariosPorCanal[c.id]||[]).length;
     const primerComentario = (comentariosPorCanal[c.id]||[])[0];
-    const tooltipTexto = primerComentario 
-        ? `📹 ${primerComentario.videoTitulo.substring(0,40)}...\n💬 ${primerComentario.autor}: "${primerComentario.texto.substring(0,50)}..."` 
-        : '';
-
     const burbuja = numComentarios > 0 ? `
-        <span class="burbuja-comentarios" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}');event.stopPropagation();" title="${tooltipTexto.replace(/"/g,'&quot;')}">
+        <span class="burbuja-comentarios" onclick="abrirMensajes('${c.id}','${c.nombre}','${c.color}','${c.emoji}');event.stopPropagation();">
             ${numComentarios}
             <span class="burbuja-tooltip">
-                <strong style="color:#FF6B6B">${numComentarios} comentario${numComentarios>1?'s':''} nuevo${numComentarios>1?'s':''}</strong><br>
+                <strong style="color:#FF6B6B">${numComentarios} comentario${numComentarios>1?'s':''}</strong><br>
                 ${primerComentario ? `<span style="color:#888">📹 ${primerComentario.videoTitulo.substring(0,45)}...</span><br><span style="color:#ddd">👤 ${primerComentario.autor}: "${primerComentario.texto.substring(0,60)}..."</span>` : ''}
             </span>
         </span>` : '';
@@ -279,13 +273,10 @@ async function cargarDatos() {
         document.getElementById('total-subs').textContent = fmt(totalSubs);
         document.getElementById('total-vistas').textContent = fmt(totalVistas);
         document.getElementById('total-videos').textContent = fmt(totalVideos);
-
-        // Cargar comentarios en paralelo para todos los canales
         await Promise.all(todos.map(async c => {
             const comentarios = await fetchComentariosRecientes(c.id);
             comentariosPorCanal[c.id] = comentarios;
         }));
-
         document.getElementById('canales-activos').innerHTML = todos.slice(0,9).map(renderCanal).join('');
         document.getElementById('canales-nuevos').innerHTML = todos.slice(9).map(renderCanal).join('');
         document.getElementById('last-update').textContent = '🕐 ' + new Date().toLocaleString('es-DO');
@@ -324,30 +315,24 @@ async function abrirMensajes(id,nombre,color,emoji){
     document.getElementById('mensajesTitle').textContent=`💬 Mensajes — ${emoji} ${nombre}`;
     document.getElementById('mensajesCanalInfo').textContent=`Canal: ${nombre} | Últimos comentarios`;
     document.getElementById('modalMensajes').classList.add('active');
-
-    // Usar comentarios ya cargados si existen
     let comentarios = comentariosPorCanal[id];
     if(!comentarios) {
         document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">⏳ Cargando comentarios...</div>';
         comentarios = await fetchComentariosRecientes(id);
         comentariosPorCanal[id] = comentarios;
     }
-
     if(!comentarios.length){
-        document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">📭 No hay comentarios recientes</div>';
+        document.getElementById('mensajesLista').innerHTML='<div class="no-comentarios">🔭 No hay comentarios recientes</div>';
         return;
     }
-
     document.getElementById('mensajesLista').innerHTML=comentarios.map(c=>`
         <div class="comentario-card">
             <div class="comentario-autor">👤 ${c.autor}</div>
-            <div class="comentario-video">
-                📹 <a href="https://youtube.com/watch?v=${c.videoId}" target="_blank">${c.videoTitulo.substring(0,55)}${c.videoTitulo.length>55?'...':''}</a>
-            </div>
+            <div class="comentario-video">📹 <a href="https://youtube.com/watch?v=${c.videoId}" target="_blank">${c.videoTitulo.substring(0,55)}${c.videoTitulo.length>55?'...':''}</a></div>
             <div class="comentario-texto">"${c.texto}"</div>
             <div class="comentario-meta">❤️ ${c.likes} likes · 📅 ${c.fecha}</div>
             <div class="comentario-acciones">
-                <button class="btn-accion" style="background:#4CAF50;color:#000;" onclick="responderConTexto('${c.id}','${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">✍️ Texto</button>
+                <button class="btn-accion" style="background:#4CAF50;color:#000;" onclick="responderConTexto('${c.id}','${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">✏️ Texto</button>
                 <button class="btn-accion" style="background:#00d4ff;color:#000;" onclick="responderConIdea('${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">💡 Idea</button>
                 <button class="btn-accion" style="background:#9B59B6;color:#fff;" onclick="responderConGuion('${encodeURIComponent(c.autor)}','${encodeURIComponent(c.texto)}')">📝 Guión</button>
             </div>

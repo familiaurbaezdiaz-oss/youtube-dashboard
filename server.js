@@ -14,9 +14,9 @@ const CANALES_CONFIG = {
     "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",         nombre: "Un Cafe con el Mundo" },
     "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",           nombre: "Como Hacer Dinero" },
     "UC7uB3kv6xkRnzBqOuYK0rVQ": { carpeta: "finanzasinlimites",   nombre: "Finanzas Sin Limites" },
-    "UCVdxFnplEkh8rs_L9GSCFaw": { carpeta: "dinerosimentiras",    nombre: "Dinero Sin Mentiras" },
+    "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "dinerosimentiras",    nombre: "Dinero Sin Mentiras" },
     "UCMeGTxwHiUHZV7F6fFS12Qw": { carpeta: "mentedigital",        nombre: "Mente Digital" },
-    "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "inverteyliberate",    nombre: "Invierte y Liberate" },
+    "UCVdxFnplEkh8rs_L9GSCFaw": { carpeta: "inverteyliberate",    nombre: "Invierte y Liberate" },
     "UCz6JMCRoZTqZNTAPRd7alDQ": { carpeta: "secretosdesalud",     nombre: "Secretos de Salud" },
     "UCN8GZhEYvJXdIkXpoBLfY4w": { carpeta: "comemueveteysana",    nombre: "Come Muevete y Sana" },
     "UC-OLqHHiL9EwKBNFjr8uNEQ": { carpeta: "deportedominicanos",  nombre: "Deporte Dominicanos Sin Fronteras" },
@@ -48,7 +48,7 @@ app.post('/api/generar-video', (req, res) => {
         .replace(/\n/g, '\\n')
         .replace(/\r/g, '');
  
-    const scriptPy = `import os, sys
+    const scriptPy = `import os, sys, re
 sys.path.insert(0, r"${carpeta}")
 os.chdir(r"${carpeta}")
 from dotenv import load_dotenv
@@ -63,8 +63,8 @@ from moviepy import VideoFileClip, AudioFileClip, CompositeAudioClip
 from datetime import datetime
  
 main_content = open(r"${carpeta}\\main.py", encoding='utf-8').read()
-COLOR_CANAL = main_content.split('COLOR_CANAL = "')[1].split('"')[0]
-import re
+color_match = re.search(r'COLOR_CANAL\\s*=\\s*"([^"]+)"', main_content)
+COLOR_CANAL = color_match.group(1) if color_match else "#FF6B6B"
 logo_match = re.search(r'LOGO_CANAL\\s*=\\s*r?"([^"]+)"', main_content)
 LOGO_CANAL = logo_match.group(1) if logo_match else ""
 NOMBRE_CANAL = "${config.nombre}"
@@ -120,29 +120,64 @@ else:
     fs.writeFileSync(tempFile, scriptPy, 'utf8');
     console.log(`Generando video para ${config.nombre} - modo: ${modo}`);
  
-    res.json({ 
-        success: true, 
-        message: "Video en proceso — aparecera en YouTube en 3-5 minutos", 
-        url: `https://studio.youtube.com/channel/${canal_id}/videos` 
+    res.json({
+        success: true,
+        message: "Video en proceso — aparecera en YouTube en 3-5 minutos",
+        url: `https://studio.youtube.com/channel/${canal_id}/videos`
     });
  
-    exec(`"${PYTHON_GLOBAL}" "${tempFile}"`, { cwd: carpeta, timeout: 600000, env: { ...process.env, PYTHONIOENCODING: 'utf-8' } }, (err, stdout, stderr) => {
+    console.log(`Script temporal: ${tempFile}`);
+
+exec(
+    `"${PYTHON_GLOBAL}" -X utf8 "${tempFile}"`,
+    {
+        cwd: carpeta,
+        timeout: 600000,
+        env: {
+            ...process.env,
+            PYTHONIOENCODING: 'utf-8'
+        }
+    },
+    (err, stdout, stderr) => {
+
+        console.log(`\n==============================`);
+        console.log(`CANAL: ${config.nombre}`);
+        console.log(`==============================`);
+
+        if (stdout) {
+            console.log("\n===== STDOUT COMPLETO =====");
+            console.log(stdout);
+        }
+
+        if (stderr) {
+            console.log("\n===== STDERR COMPLETO =====");
+            console.log(stderr);
+        }
+
         if (err) {
-            console.error(`Error ${config.nombre}:`, err.message);
-            if (stderr) console.error('STDERR COMPLETO:', stderr);
-            if (stdout) console.error('STDOUT COMPLETO:', stdout);
+            console.log("\n===== ERROR COMPLETO =====");
+            console.log(err);
+            console.log("Código:", err.code);
+            console.log("Signal:", err.signal);
         } else {
-            const ok = stdout.split('\n').find(l => l.startsWith('SUCCESS:'));
+
+            const ok = stdout
+                .split('\n')
+                .find(l => l.startsWith('SUCCESS:'));
+
             if (ok) {
                 const videoId = ok.replace('SUCCESS:', '').trim();
-                console.log(`Video publicado ${config.nombre}: https://youtube.com/shorts/${videoId}`);
-            } else {
-                console.log(`Output: ${stdout.substring(0, 500)}`);
+
+                console.log(
+                    `Video publicado ${config.nombre}: https://youtube.com/shorts/${videoId}`
+                );
             }
         }
-        
-        // // try { fs.unlinkSync(tempFile); } catch(e) {}
-    });
+
+        // NO BORRAR MIENTRAS DEPURAMOS
+        try { fs.unlinkSync(tempFile); } catch(e) {}
+    }
+);
 });
  
 app.listen(PORT, () => {
