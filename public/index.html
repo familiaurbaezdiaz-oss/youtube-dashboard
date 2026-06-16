@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -81,12 +81,30 @@
         .btn-accion { padding: 8px; border-radius: 8px; border: none; font-size: 0.75rem; font-weight: bold; cursor: pointer; transition: all 0.2s; }
         .btn-accion:hover { opacity: 0.8; }
         .no-comentarios { text-align: center; color: #555; padding: 30px; font-size: 0.9rem; }
+        .agenda-bloque { background: #111; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-top: 15px; }
+        .agenda-bloque label.input-label { margin-bottom: 6px; }
+        .agenda-fila { display: flex; gap: 10px; margin-bottom: 10px; }
+        .agenda-fila input { flex: 1; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; color: #fff; padding: 10px; font-size: 0.9rem; font-family: inherit; }
+        .agenda-fila input:focus { outline: none; border-color: #555; }
+        .btn-agendar { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #FFD700; background: transparent; color: #FFD700; font-size: 0.9rem; font-weight: bold; cursor: pointer; margin-top: 5px; transition: all 0.2s; }
+        .btn-agendar:hover:not(:disabled) { background: #FFD70022; }
+        .btn-agendar:disabled { opacity: 0.5; cursor: not-allowed; }
+        .agenda-lista-item { background: #1a1a1a; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 10px; }
+        .agenda-lista-item .agenda-canal { font-weight: bold; color: #FFD700; font-size: 0.95rem; }
+        .agenda-lista-item .agenda-fecha { color: #aaa; margin-top: 4px; font-size: 0.8rem; }
+        .agenda-lista-item .agenda-contenido { color: #ccc; margin-top: 6px; font-style: italic; font-size: 0.85rem; }
+        .agenda-estado { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; margin-left: 8px; }
+        .agenda-estado.pendiente { background: #2a2a00; color: #FFD700; }
+        .agenda-estado.completado { background: #0a2a0a; color: #4CAF50; }
+        .agenda-estado.fallido { background: #2a0a0a; color: #FF6B6B; }
+        .agenda-estado.en_proceso { background: #0a1a2a; color: #00d4ff; }
+        .btn-cancelar-agenda { background: none; border: 1px solid #FF6B6B; color: #FF6B6B; border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer; margin-top: 8px; }
     </style>
 </head>
 <body>
 <div class="header">
     <h1>📺 YouTube Dashboard</h1>
-    <p>Panel de control — 16 canales en tiempo real</p>
+    <p>Panel de control — 20 canales en tiempo real</p>
 </div>
 <div class="totales">
     <div class="total-card"><div class="numero" id="total-subs">--</div><div class="label">🔔 Suscriptores Totales</div></div>
@@ -97,8 +115,11 @@
 <div class="seccion-titulo">📺 CANALES ACTIVOS (9)</div>
 <div id="canales-activos" class="canales"><div class="loading">⏳ Cargando...</div></div>
 
-<div class="seccion-titulo">🆕 CANALES NUEVOS (7)</div>
+<div class="seccion-titulo">🆕 CANALES NUEVOS (11)</div>
 <div id="canales-nuevos" class="canales"><div class="loading">⏳ Cargando...</div></div>
+
+<div class="seccion-titulo">📅 VIDEOS AGENDADOS</div>
+<div id="agenda-lista" style="padding:10px 30px 30px;"><div class="loading">⏳ Cargando agenda...</div></div>
 
 <div class="last-update" id="last-update"></div>
 <button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button>
@@ -126,14 +147,30 @@
         <div class="tab-content" id="content1">
             <label class="input-label">Escribe una idea corta — la IA genera el guión y crea el video:</label>
             <textarea id="ideaGuion" placeholder="Ej: por qué el cardio en ayunas no quema grasa" style="min-height:80px;"></textarea>
-            <button class="btn-generar" id="btnIdea" onclick="generarDesdeIdea()" style="background:#00d4ff;color:#000;">🤖 Generar Guión y Crear Video</button>
+            <button class="btn-generar" id="btnIdea" onclick="generarDesdeIdea()" style="background:#00d4ff;color:#000;">🤖 Generar Ahora</button>
+            <div class="agenda-bloque">
+                <label class="input-label">📅 O agenda este video para mas tarde:</label>
+                <div class="agenda-fila">
+                    <input type="date" id="fechaIdea">
+                    <input type="time" id="horaIdea">
+                </div>
+                <button class="btn-agendar" id="btnAgendarIdea" onclick="agendarDesdeIdea()">📅 Agendar Video</button>
+            </div>
             <div class="status-box" id="statusIdea"></div>
             <div class="resultado-box" id="resultadoIdea"></div>
         </div>
         <div class="tab-content" id="content2">
             <label class="input-label">Escribe el guión completo — el sistema crea el video con la voz del canal:</label>
             <textarea id="guionCompleto" placeholder="Escribe aquí el guión completo..." style="min-height:150px;"></textarea>
-            <button class="btn-generar" id="btnGuion" onclick="crearDesdeGuion()" style="background:#9B59B6;color:#fff;">🎬 Crear Video con Este Guión</button>
+            <button class="btn-generar" id="btnGuion" onclick="crearDesdeGuion()" style="background:#9B59B6;color:#fff;">🎬 Crear Ahora</button>
+            <div class="agenda-bloque">
+                <label class="input-label">📅 O agenda este video para mas tarde:</label>
+                <div class="agenda-fila">
+                    <input type="date" id="fechaGuion">
+                    <input type="time" id="horaGuion">
+                </div>
+                <button class="btn-agendar" id="btnAgendarGuion" onclick="agendarDesdeGuion()">📅 Agendar Video</button>
+            </div>
             <div class="status-box" id="statusGuion"></div>
             <div class="resultado-box" id="resultadoGuion"></div>
         </div>
@@ -163,7 +200,7 @@ const CANALES_ACTIVOS = [
     { nombre: "Dinero Sin Mentiras",  id: "UCT1irBNP1JR5O0UD1gcfbOA", color: "#FFEAA7", emoji: "🔥" },
     { nombre: "Mente Digital",        id: "UCMeGTxwHiUHZV7F6fFS12Qw", color: "#DDA0DD", emoji: "🧠" },
     { nombre: "Invierte y Liberate",  id: "UCVdxFnplEkh8rs_L9GSCFaw", color: "#F7DC6F", emoji: "💎" },
-    { nombre: "Secretos de Salud",    id: "UCz6JMCRoZTqZNTAPRd7alDQ", color: "#82E0AA", emoji: "🥗" },
+    { nombre: "Secretos de Salud",    id: "UCz6JMCRoZTqZNTAPRd7alDQ", color: "#82E0AA", emoji: "🥦" },
     { nombre: "Come Muevete y Sana",  id: "UCN8GZhEYvJXdIkXpoBLfY4w", color: "#F1948A", emoji: "🏃" },
 ];
 
@@ -173,8 +210,12 @@ const CANALES_NUEVOS = [
     { nombre: "Deporte Dominicanos Sin Fronteras", id: "UC-OLqHHiL9EwKBNFjr8uNEQ", color: "#002D62", emoji: "⚾" },
     { nombre: "Mentalidad Ganadora",               id: "UCBg1Ilkd_rOXd98BFwtllhA", color: "#FFD700", emoji: "🏆" },
     { nombre: "Crianza Real",                      id: "UCDwuOde7WNjvRzVFTAPDLfQ", color: "#4FC3F7", emoji: "👨‍👩‍👧" },
-    { nombre: "Tus Historias",                     id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "🎬" },
+    { nombre: "tu.Productividad",                  id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#FF6F00", emoji: "🎯" },
     { nombre: "Psicologia Sin Filtros",            id: "UCJtuIFNfcNFvRBlEu2cRkJw", color: "#9C27B0", emoji: "🧠" },
+    { nombre: "Oracion de Poder Diario",           id: "UCW5YLDNwgy5Czwfbe8IarlA", color: "#D4AF37", emoji: "🙌" },
+    { nombre: "Paz y Oracion Cotidiana",           id: "UCeFWhWnGXGr4M6amI3guCXw", color: "#4A90A4", emoji: "🕊️" },
+    { nombre: "Misterios y Ensenanzas Biblicas",   id: "UCypPbHU2jLW5LOfhKALZEAg", color: "#8B6914", emoji: "📖" },
+    { nombre: "Espiritu de Vencedor",              id: "UCKcC76S4M3re5mOhPtU1-Sg", color: "#B8860B", emoji: "⚔️" },
 ];
 
 const TODOS_CANALES = [...CANALES_ACTIVOS, ...CANALES_NUEVOS];
@@ -301,12 +342,16 @@ function cerrarModal(e){if(e.target===document.getElementById('modalOverlay'))ce
 function cerrarModalBtn(){document.getElementById('modalOverlay').classList.remove('active');resetModal();}
 function resetModal(){
     cambiarTab(0);
-    ['textoComu','ideaGuion','guionCompleto'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['textoComu','ideaGuion','guionCompleto','fechaIdea','horaIdea','fechaGuion','horaGuion'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
     ['statusTexto','statusIdea','statusGuion','resultadoIdea','resultadoGuion'].forEach(id=>{const el=document.getElementById(id);if(el){el.classList.remove('active');el.innerHTML='';}});
     const btnIdea=document.getElementById('btnIdea');
     const btnGuion=document.getElementById('btnGuion');
-    if(btnIdea){btnIdea.disabled=false;btnIdea.textContent='🤖 Generar Guión y Crear Video';}
-    if(btnGuion){btnGuion.disabled=false;btnGuion.textContent='🎬 Crear Video con Este Guión';}
+    const btnAgendarIdea=document.getElementById('btnAgendarIdea');
+    const btnAgendarGuion=document.getElementById('btnAgendarGuion');
+    if(btnIdea){btnIdea.disabled=false;btnIdea.textContent='🤖 Generar Ahora';}
+    if(btnGuion){btnGuion.disabled=false;btnGuion.textContent='🎬 Crear Ahora';}
+    if(btnAgendarIdea){btnAgendarIdea.disabled=false;btnAgendarIdea.textContent='📅 Agendar Video';}
+    if(btnAgendarGuion){btnAgendarGuion.disabled=false;btnAgendarGuion.textContent='📅 Agendar Video';}
 }
 function cambiarTab(n){for(let i=0;i<3;i++){document.getElementById(`tab${i}`).classList.toggle('active',i===n);document.getElementById(`content${i}`).classList.toggle('active',i===n);}}
 
@@ -378,8 +423,8 @@ async function generarDesdeIdea(){
             const r=document.getElementById('resultadoIdea');
             r.innerHTML=`<div>🎬 <a class="resultado-link" href="${data.url}" target="_blank">${data.url}</a></div>`; r.classList.add('active');
             btn.textContent='✅ Video enviado';
-        } else { status.innerHTML=`<div class="status-line error">❌ ${data.error}</div>`; btn.disabled=false; btn.textContent='🤖 Generar Guión y Crear Video'; }
-    } catch(e){ status.innerHTML=`<div class="status-line error">❌ Error: ${e.message}</div>`; btn.disabled=false; btn.textContent='🤖 Generar Guión y Crear Video'; }
+        } else { status.innerHTML=`<div class="status-line error">❌ ${data.error}</div>`; btn.disabled=false; btn.textContent='🤖 Generar Ahora'; }
+    } catch(e){ status.innerHTML=`<div class="status-line error">❌ Error: ${e.message}</div>`; btn.disabled=false; btn.textContent='🤖 Generar Ahora'; }
 }
 
 async function crearDesdeGuion(){
@@ -395,12 +440,137 @@ async function crearDesdeGuion(){
             const r=document.getElementById('resultadoGuion');
             r.innerHTML=`<div>🎬 <a class="resultado-link" href="${data.url}" target="_blank">${data.url}</a></div>`; r.classList.add('active');
             btn.textContent='✅ Video enviado';
-        } else { status.innerHTML=`<div class="status-line error">❌ ${data.error}</div>`; btn.disabled=false; btn.textContent='🎬 Crear Video con Este Guión'; }
-    } catch(e){ status.innerHTML=`<div class="status-line error">❌ Error: ${e.message}</div>`; btn.disabled=false; btn.textContent='🎬 Crear Video con Este Guión'; }
+        } else { status.innerHTML=`<div class="status-line error">❌ ${data.error}</div>`; btn.disabled=false; btn.textContent='🎬 Crear Ahora'; }
+    } catch(e){ status.innerHTML=`<div class="status-line error">❌ Error: ${e.message}</div>`; btn.disabled=false; btn.textContent='🎬 Crear Ahora'; }
+}
+
+function fechaHoraISO(fechaId, horaId) {
+    const fecha = document.getElementById(fechaId).value;
+    const hora = document.getElementById(horaId).value;
+    if (!fecha || !hora) return null;
+    const local = new Date(fecha + 'T' + hora + ':00');
+    if (isNaN(local.getTime())) return null;
+    return local.toISOString();
+}
+
+async function agendarDesdeIdea() {
+    const idea = document.getElementById('ideaGuion').value.trim();
+    if (!idea) return alert('Escribe una idea primero');
+    const iso = fechaHoraISO('fechaIdea', 'horaIdea');
+    if (!iso) return alert('Selecciona fecha y hora');
+    const status = document.getElementById('statusIdea'), btn = document.getElementById('btnAgendarIdea');
+    btn.disabled = true; btn.textContent = '⏳ Agendando...';
+    try {
+        const res = await fetch('/api/agendar-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ canal_id: canalActual.id, modo: 'idea', contenido: idea, fecha_hora: iso }) });
+        const data = await res.json();
+        if (data.success) {
+            status.innerHTML = '<div class="status-line ok">✅ ' + data.message + '</div>'; status.classList.add('active');
+            btn.textContent = '✅ Agendado';
+            cargarAgenda();
+        } else {
+            status.innerHTML = '<div class="status-line error">❌ ' + data.error + '</div>'; status.classList.add('active');
+            btn.disabled = false; btn.textContent = '📅 Agendar Video';
+        }
+    } catch (e) {
+        status.innerHTML = '<div class="status-line error">❌ Error: ' + e.message + '</div>'; status.classList.add('active');
+        btn.disabled = false; btn.textContent = '📅 Agendar Video';
+    }
+}
+
+async function agendarDesdeGuion() {
+    const guion = document.getElementById('guionCompleto').value.trim();
+    if (!guion) return alert('Escribe el guion primero');
+    const iso = fechaHoraISO('fechaGuion', 'horaGuion');
+    if (!iso) return alert('Selecciona fecha y hora');
+    const status = document.getElementById('statusGuion'), btn = document.getElementById('btnAgendarGuion');
+    btn.disabled = true; btn.textContent = '⏳ Agendando...';
+    try {
+        const res = await fetch('/api/agendar-video', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ canal_id: canalActual.id, modo: 'guion', contenido: guion, fecha_hora: iso }) });
+        const data = await res.json();
+        if (data.success) {
+            status.innerHTML = '<div class="status-line ok">✅ ' + data.message + '</div>'; status.classList.add('active');
+            btn.textContent = '✅ Agendado';
+            cargarAgenda();
+        } else {
+            status.innerHTML = '<div class="status-line error">❌ ' + data.error + '</div>'; status.classList.add('active');
+            btn.disabled = false; btn.textContent = '📅 Agendar Video';
+        }
+    } catch (e) {
+        status.innerHTML = '<div class="status-line error">❌ Error: ' + e.message + '</div>'; status.classList.add('active');
+        btn.disabled = false; btn.textContent = '📅 Agendar Video';
+    }
+}
+
+function etiquetaEstado(estado) {
+    const mapa = { pendiente: '🟡 Pendiente', en_proceso: '🔵 En proceso', completado: '🟢 Completado', fallido: '🔴 Fallido', cancelado: '⚪ Cancelado' };
+    return mapa[estado] || estado;
+}
+
+async function cargarAgenda() {
+    const cont = document.getElementById('agenda-lista');
+    if (!cont) return;
+    try {
+        const res = await fetch('/api/agenda');
+        const data = await res.json();
+        if (!data.success || !data.tareas.length) {
+            cont.innerHTML = '<div class="no-comentarios">📭 No hay videos agendados</div>';
+            return;
+        }
+        cont.innerHTML = data.tareas.map(function(t) {
+            const fecha = new Date(t.fecha_hora).toLocaleString('es-DO', { dateStyle: 'medium', timeStyle: 'short' });
+            const resultadoHtml = (t.resultado && t.resultado.url)
+                ? '<div><a class="resultado-link" href="' + t.resultado.url + '" target="_blank">' + t.resultado.url + '</a></div>'
+                : ((t.resultado && t.resultado.error) ? '<div style="color:#FF6B6B;">' + t.resultado.error + '</div>' : '');
+            const q = String.fromCharCode(39);
+            const cancelarBtn = t.estado === 'pendiente'
+                ? '<button class="btn-cancelar-agenda" onclick="cancelarAgenda(' + q + t.id + q + ')">Cancelar</button>'
+                : '';
+            const borrarBtn = (t.estado === 'completado' || t.estado === 'fallido' || t.estado === 'cancelado')
+                ? '<button class="btn-cancelar-agenda" onclick="borrarAgenda(' + q + t.id + q + ')">Borrar</button>'
+                : '';
+            return '<div class="agenda-lista-item">' +
+                '<span class="agenda-canal">' + t.canal_nombre + '</span>' +
+                '<span class="agenda-estado ' + t.estado + '">' + etiquetaEstado(t.estado) + '</span>' +
+                '<div class="agenda-fecha">📅 ' + fecha + '</div>' +
+                '<div class="agenda-contenido">' + t.contenido.substring(0, 100) + (t.contenido.length > 100 ? '...' : '') + '</div>' +
+                resultadoHtml +
+                cancelarBtn +
+                borrarBtn +
+                '</div>';
+        }).join('');
+    } catch (e) {
+        cont.innerHTML = '<div class="no-comentarios">❌ Error cargando agenda: ' + e.message + '</div>';
+    }
+}
+
+async function cancelarAgenda(id) {
+    if (!confirm('¿Cancelar este video agendado?')) return;
+    try {
+        const res = await fetch('/api/agenda/cancelar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+        const data = await res.json();
+        if (data.success) cargarAgenda();
+        else alert('Error: ' + data.error);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+async function borrarAgenda(id) {
+    if (!confirm('¿Borrar este registro del historial?')) return;
+    try {
+        const res = await fetch('/api/agenda/borrar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+        const data = await res.json();
+        if (data.success) cargarAgenda();
+        else alert('Error: ' + data.error);
+    } catch (e) {
+        alert('Error: ' + e.message);
+    }
 }
 
 cargarDatos();
 setInterval(cargarDatos, 300000);
+cargarAgenda();
+setInterval(cargarAgenda, 30000);
 </script>
 </body>
 </html>

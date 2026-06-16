@@ -2,52 +2,100 @@ const express = require('express');
 const path = require('path');
 const { exec } = require('child_process');
 const fs = require('fs');
- 
+
 const app = express();
 const PORT = process.env.PORT || 3000;
- 
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
- 
+
 const CANALES_CONFIG = {
-    "UCtCF9WMqwa5vCjgLNyx5zaw": { carpeta: "fitsecrets",          nombre: "Fit Tips Latino" },
-    "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",         nombre: "Un Cafe con el Mundo" },
-    "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",           nombre: "Como Hacer Dinero" },
-    "UC7uB3kv6xkRnzBqOuYK0rVQ": { carpeta: "finanzasinlimites",   nombre: "Finanzas Sin Limites" },
-    "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "dinerosimentiras",    nombre: "Dinero Sin Mentiras" },
-    "UCMeGTxwHiUHZV7F6fFS12Qw": { carpeta: "mentedigital",        nombre: "Mente Digital" },
-    "UCVdxFnplEkh8rs_L9GSCFaw": { carpeta: "inverteyliberate",    nombre: "Invierte y Liberate" },
-    "UCz6JMCRoZTqZNTAPRd7alDQ": { carpeta: "secretosdesalud",     nombre: "Secretos de Salud" },
-    "UCN8GZhEYvJXdIkXpoBLfY4w": { carpeta: "comemueveteysana",    nombre: "Come Muevete y Sana" },
-    "UC-OLqHHiL9EwKBNFjr8uNEQ": { carpeta: "deportedominicanos",  nombre: "Deporte Dominicanos Sin Fronteras" },
-    "UCefqr_OtXH0c8yvOIuSIs8g": { carpeta: "feyabundancia",       nombre: "Fe y Abundancia" },
-    "UCrHdus3_spVg2fYDAuE97AQ": { carpeta: "historiacensura",     nombre: "Historia Sin Censura" },
-    "UCBg1Ilkd_rOXd98BFwtllhA": { carpeta: "mentalidadganadora",  nombre: "Mentalidad Ganadora" },
-    "UCDwuOde7WNjvRzVFTAPDLfQ": { carpeta: "crianzareal",         nombre: "Crianza Real" },
-    "UCv6vYEGZkvQLJP22N0VVXrA": { carpeta: "tuproductividad",     nombre: "tu.Productividad" },
-    "UCJtuIFNfcNFvRBlEu2cRkJw": { carpeta: "psicologiasinfiltros",nombre: "Psicologia Sin Filtros" },
+    "UCtCF9WMqwa5vCjgLNyx5zaw": { carpeta: "fitsecrets",          nombre: "Fit Tips Latino", musica: "energetic workout music" },
+    "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",         nombre: "Un Cafe con el Mundo", musica: "calm coffee lofi music" },
+    "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",           nombre: "Como Hacer Dinero", musica: "corporate inspiring music" },
+    "UC7uB3kv6xkRnzBqOuYK0rVQ": { carpeta: "finanzasinlimites",   nombre: "Finanzas Sin Limites", musica: "corporate inspiring music" },
+    "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "dinerosimentiras",    nombre: "Dinero Sin Mentiras", musica: "corporate inspiring music" },
+    "UCMeGTxwHiUHZV7F6fFS12Qw": { carpeta: "mentedigital",        nombre: "Mente Digital", musica: "corporate inspiring music" },
+    "UCVdxFnplEkh8rs_L9GSCFaw": { carpeta: "inverteyliberate",    nombre: "Invierte y Liberate", musica: "corporate inspiring music" },
+    "UCz6JMCRoZTqZNTAPRd7alDQ": { carpeta: "secretosdesalud",     nombre: "Secretos de Salud", musica: "peaceful ambient music" },
+    "UCN8GZhEYvJXdIkXpoBLfY4w": { carpeta: "comemueveteysana",    nombre: "Come Muevete y Sana", musica: "energetic workout music" },
+    "UC-OLqHHiL9EwKBNFjr8uNEQ": { carpeta: "deportedominicanos",  nombre: "Deporte Dominicanos Sin Fronteras", musica: "epic motivational music" },
+    "UCefqr_OtXH0c8yvOIuSIs8g": { carpeta: "feyabundancia",       nombre: "Fe y Abundancia", musica: "peaceful ambient music" },
+    "UCrHdus3_spVg2fYDAuE97AQ": { carpeta: "historiacensura",     nombre: "Historia Sin Censura", musica: "cinematic dramatic music" },
+    "UCBg1Ilkd_rOXd98BFwtllhA": { carpeta: "mentalidadganadora",  nombre: "Mentalidad Ganadora", musica: "corporate inspiring music" },
+    "UCDwuOde7WNjvRzVFTAPDLfQ": { carpeta: "crianzareal",         nombre: "Crianza Real", musica: "warm acoustic music" },
+    "UCv6vYEGZkvQLJP22N0VVXrA": { carpeta: "tuproductividad",     nombre: "tu.Productividad", musica: "cinematic dramatic music" },
+    "UCJtuIFNfcNFvRBlEu2cRkJw": { carpeta: "psicologiasinfiltros",nombre: "Psicologia Sin Filtros", musica: "peaceful ambient music" },
+    "UCW5YLDNwgy5Czwfbe8IarlA": { carpeta: "oraciondepoder",      nombre: "Oracion de Poder Diario", musica: "powerful worship music" },
+    "UCeFWhWnGXGr4M6amI3guCXw": { carpeta: "pazyoracion",         nombre: "Paz y Oracion Cotidiana", musica: "peaceful ambient music" },
+    "UCypPbHU2jLW5LOfhKALZEAg": { carpeta: "misteriosbiblicos",   nombre: "Misterios y Ensenanzas Biblicas", musica: "mysterious cinematic music" },
+    "UCKcC76S4M3re5mOhPtU1-Sg": { carpeta: "espiritudevencedor",  nombre: "Espiritu de Vencedor", musica: "epic motivational music" },
 };
- 
+
 const BASE = "C:\\Users\\hanse\\Desktop\\PROYECTOS";
 const PYTHON_GLOBAL = "C:\\Users\\hanse\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe";
- 
-app.post('/api/generar-video', (req, res) => {
-    const { canal_id, modo, contenido } = req.body;
-    if (!canal_id || !contenido || !modo) {
-        return res.json({ success: false, error: "Faltan parametros" });
+const AGENDA_FILE = path.join(__dirname, 'agenda.json');
+
+const canalesEnProceso = new Set();
+
+// ============================================================
+//  AGENDA: persistencia simple en archivo JSON
+// ============================================================
+function leerAgenda() {
+    try {
+        if (!fs.existsSync(AGENDA_FILE)) return [];
+        const raw = fs.readFileSync(AGENDA_FILE, 'utf8');
+        return raw.trim() ? JSON.parse(raw) : [];
+    } catch (e) {
+        console.log('Error leyendo agenda.json:', e.message);
+        return [];
     }
+}
+
+function guardarAgenda(tareas) {
+    fs.writeFileSync(AGENDA_FILE, JSON.stringify(tareas, null, 2), 'utf8');
+}
+
+function agregarTareaAgenda(tarea) {
+    const tareas = leerAgenda();
+    tareas.push(tarea);
+    guardarAgenda(tareas);
+    return tarea;
+}
+
+function actualizarTareaAgenda(id, cambios) {
+    const tareas = leerAgenda();
+    const idx = tareas.findIndex(t => t.id === id);
+    if (idx === -1) return null;
+    tareas[idx] = { ...tareas[idx], ...cambios };
+    guardarAgenda(tareas);
+    return tareas[idx];
+}
+
+// ============================================================
+//  GENERACION DE VIDEO (logica reutilizable)
+//  Usada tanto por /api/generar-video (inmediato) como por el
+//  scheduler de la agenda (programado).
+// ============================================================
+function generarVideoCanal(canal_id, modo, contenido, onResultado) {
     const config = CANALES_CONFIG[canal_id];
     if (!config) {
-        return res.json({ success: false, error: "Canal no encontrado" });
+        onResultado({ ok: false, error: "Canal no encontrado" });
+        return;
     }
- 
+    if (canalesEnProceso.has(canal_id)) {
+        onResultado({ ok: false, error: `Ya hay un video generandose para ${config.nombre}.` });
+        return;
+    }
+    canalesEnProceso.add(canal_id);
+
     const carpeta = `${BASE}\\${config.carpeta}`;
     const contenidoEscapado = contenido
         .replace(/\\/g, '\\\\')
         .replace(/"/g, '\\"')
         .replace(/\n/g, '\\n')
         .replace(/\r/g, '');
- 
+
     const scriptPy = `import os, sys, re
 sys.path.insert(0, r"${carpeta}")
 os.chdir(r"${carpeta}")
@@ -61,7 +109,7 @@ from modules.youtube_uploader import subir_video, generar_titulo_y_descripcion
 from modules.thumbnail_generator import crear_thumbnail
 from moviepy import VideoFileClip, AudioFileClip, CompositeAudioClip
 from datetime import datetime
- 
+
 main_content = open(r"${carpeta}\\main.py", encoding='utf-8').read()
 color_match = re.search(r'COLOR_CANAL\\s*=\\s*"([^"]+)"', main_content)
 COLOR_CANAL = color_match.group(1) if color_match else "#FF6B6B"
@@ -70,31 +118,31 @@ LOGO_CANAL = logo_match.group(1) if logo_match else ""
 NOMBRE_CANAL = "${config.nombre}"
 modo = "${modo}"
 contenido = "${contenidoEscapado}"
- 
+
 print(f"Iniciando pipeline para {NOMBRE_CANAL} - modo: {modo}", flush=True)
- 
+
 if modo == "idea":
     resultado = generar_script(contenido, "short")
     script = resultado['script']
 else:
     script = contenido
- 
+
 tema = contenido[:80]
 ruta_audio = generar_audio(script)
 if not ruta_audio:
     print("ERROR: No se pudo generar audio", flush=True)
     sys.exit(1)
- 
+
 busquedas = extraer_imagenes_del_script(script, tema)
 ruta_video = generar_video_multitema(busquedas, ruta_audio)
 if not ruta_video:
     print("ERROR: No se pudo generar video", flush=True)
     sys.exit(1)
- 
-ruta_musica = obtener_musica_fondo()
+
+ruta_musica = obtener_musica_fondo("${config.musica}", 30)
 if ruta_musica:
     voz = AudioFileClip(ruta_audio)
-    musica = AudioFileClip(ruta_musica).with_effects([]).with_volume_scaled(0.15)
+    musica = AudioFileClip(ruta_musica).with_effects([]).with_volume_scaled(0.25)
     video = VideoFileClip(ruta_video)
     if musica.duration > video.duration:
         musica = musica.subclipped(0, video.duration)
@@ -105,7 +153,7 @@ if ruta_musica:
     video_clip.write_videofile(ruta_final, fps=24, codec="libx264", audio_codec="aac", logger=None)
 else:
     ruta_final = ruta_video
- 
+
 titulo_gancho = generar_titulo_gancho(script, tema)
 ruta_thumbnail = crear_thumbnail(titulo=titulo_gancho, nombre_canal=NOMBRE_CANAL, logo_path=LOGO_CANAL, color_canal=COLOR_CANAL)
 titulo, descripcion = generar_titulo_y_descripcion(tema, script, titulo_gancho)
@@ -115,72 +163,194 @@ if video_id:
 else:
     print("ERROR: No se pudo subir", flush=True)
 `;
- 
+
     const tempFile = `${BASE}\\temp_video_${Date.now()}.py`;
     fs.writeFileSync(tempFile, scriptPy, 'utf8');
     console.log(`Generando video para ${config.nombre} - modo: ${modo}`);
- 
+
+    exec(
+        `"${PYTHON_GLOBAL}" -X utf8 "${tempFile}"`,
+        {
+            cwd: carpeta,
+            timeout: 600000,
+            env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
+        },
+        (err, stdout, stderr) => {
+            console.log(`\n==============================`);
+            console.log(`CANAL: ${config.nombre}`);
+            console.log(`==============================`);
+            if (stdout) { console.log("\n===== STDOUT COMPLETO ====="); console.log(stdout); }
+            if (stderr) { console.log("\n===== STDERR COMPLETO ====="); console.log(stderr); }
+
+            let resultado = { ok: false, error: "Error desconocido" };
+
+            if (err) {
+                console.log("\n===== ERROR COMPLETO =====");
+                console.log(err);
+                resultado = { ok: false, error: err.message || String(err) };
+            } else {
+                const ok = stdout.split('\n').find(l => l.startsWith('SUCCESS:'));
+                if (ok) {
+                    const videoId = ok.replace('SUCCESS:', '').trim();
+                    console.log(`Video publicado ${config.nombre}: https://youtube.com/shorts/${videoId}`);
+                    resultado = { ok: true, videoId, url: `https://youtube.com/shorts/${videoId}` };
+                } else {
+                    resultado = { ok: false, error: "No se encontro SUCCESS en la salida" };
+                }
+            }
+
+            try { fs.unlinkSync(tempFile); } catch (e) {}
+            canalesEnProceso.delete(canal_id);
+            onResultado(resultado);
+        }
+    );
+}
+
+// ============================================================
+//  ENDPOINTS
+// ============================================================
+
+// Generar AHORA (comportamiento original)
+app.post('/api/generar-video', (req, res) => {
+    const { canal_id, modo, contenido } = req.body;
+    if (!canal_id || !contenido || !modo) {
+        return res.json({ success: false, error: "Faltan parametros" });
+    }
+    const config = CANALES_CONFIG[canal_id];
+    if (!config) {
+        return res.json({ success: false, error: "Canal no encontrado" });
+    }
+    if (canalesEnProceso.has(canal_id)) {
+        return res.json({ success: false, error: `Ya hay un video generandose para ${config.nombre}. Espera a que termine antes de generar otro.` });
+    }
+
     res.json({
         success: true,
-        message: "Video en proceso — aparecera en YouTube en 3-5 minutos",
+        message: "Video en proceso - aparecera en YouTube en 3-5 minutos",
         url: `https://studio.youtube.com/channel/${canal_id}/videos`
     });
- 
-    console.log(`Script temporal: ${tempFile}`);
 
-exec(
-    `"${PYTHON_GLOBAL}" -X utf8 "${tempFile}"`,
-    {
-        cwd: carpeta,
-        timeout: 600000,
-        env: {
-            ...process.env,
-            PYTHONIOENCODING: 'utf-8'
-        }
-    },
-    (err, stdout, stderr) => {
-
-        console.log(`\n==============================`);
-        console.log(`CANAL: ${config.nombre}`);
-        console.log(`==============================`);
-
-        if (stdout) {
-            console.log("\n===== STDOUT COMPLETO =====");
-            console.log(stdout);
-        }
-
-        if (stderr) {
-            console.log("\n===== STDERR COMPLETO =====");
-            console.log(stderr);
-        }
-
-        if (err) {
-            console.log("\n===== ERROR COMPLETO =====");
-            console.log(err);
-            console.log("Código:", err.code);
-            console.log("Signal:", err.signal);
+    generarVideoCanal(canal_id, modo, contenido, (resultado) => {
+        if (resultado.ok) {
+            console.log(`OK inmediato: ${config.nombre} -> ${resultado.url}`);
         } else {
-
-            const ok = stdout
-                .split('\n')
-                .find(l => l.startsWith('SUCCESS:'));
-
-            if (ok) {
-                const videoId = ok.replace('SUCCESS:', '').trim();
-
-                console.log(
-                    `Video publicado ${config.nombre}: https://youtube.com/shorts/${videoId}`
-                );
-            }
+            console.log(`FALLO inmediato: ${config.nombre} -> ${resultado.error}`);
         }
-
-        // NO BORRAR MIENTRAS DEPURAMOS
-        try { fs.unlinkSync(tempFile); } catch(e) {}
-    }
-);
+    });
 });
- 
+
+// Agendar para mas tarde / otro dia
+app.post('/api/agendar-video', (req, res) => {
+    const { canal_id, modo, contenido, fecha_hora } = req.body;
+    if (!canal_id || !contenido || !modo || !fecha_hora) {
+        return res.json({ success: false, error: "Faltan parametros (canal_id, modo, contenido, fecha_hora)" });
+    }
+    const config = CANALES_CONFIG[canal_id];
+    if (!config) {
+        return res.json({ success: false, error: "Canal no encontrado" });
+    }
+    const fechaObjetivo = new Date(fecha_hora);
+    if (isNaN(fechaObjetivo.getTime())) {
+        return res.json({ success: false, error: "fecha_hora invalida" });
+    }
+
+    const tarea = {
+        id: `tarea_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        canal_id,
+        canal_nombre: config.nombre,
+        modo,
+        contenido,
+        fecha_hora: fechaObjetivo.toISOString(),
+        estado: 'pendiente',
+        creado_en: new Date().toISOString(),
+        resultado: null
+    };
+    agregarTareaAgenda(tarea);
+
+    res.json({
+        success: true,
+        message: `Video agendado para ${fechaObjetivo.toLocaleString('es-DO')}`,
+        tarea
+    });
+});
+
+// Listar agenda (para mostrar en el dashboard)
+app.get('/api/agenda', (req, res) => {
+    const tareas = leerAgenda().sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
+    res.json({ success: true, tareas });
+});
+
+// Cancelar una tarea pendiente
+app.post('/api/agenda/cancelar', (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.json({ success: false, error: "Falta id" });
+    const tareas = leerAgenda();
+    const idx = tareas.findIndex(t => t.id === id);
+    if (idx === -1) return res.json({ success: false, error: "Tarea no encontrada" });
+    if (tareas[idx].estado !== 'pendiente') {
+        return res.json({ success: false, error: "Solo se pueden cancelar tareas pendientes" });
+    }
+    tareas[idx].estado = 'cancelado';
+    guardarAgenda(tareas);
+    res.json({ success: true });
+});
+
+// Borrar una tarea finalizada (completado, fallido o cancelado) del historial
+app.post('/api/agenda/borrar', (req, res) => {
+    const { id } = req.body;
+    if (!id) return res.json({ success: false, error: "Falta id" });
+    const tareas = leerAgenda();
+    const idx = tareas.findIndex(t => t.id === id);
+    if (idx === -1) return res.json({ success: false, error: "Tarea no encontrada" });
+    if (tareas[idx].estado === 'pendiente' || tareas[idx].estado === 'en_proceso') {
+        return res.json({ success: false, error: "No se puede borrar una tarea pendiente o en proceso. Cancelala primero." });
+    }
+    tareas.splice(idx, 1);
+    guardarAgenda(tareas);
+    res.json({ success: true });
+});
+
+// ============================================================
+//  SCHEDULER: revisa la agenda y dispara lo que ya vencio
+// ============================================================
+function procesarAgendaVencida() {
+    const tareas = leerAgenda();
+    const ahora = new Date();
+
+    const vencidas = tareas.filter(t =>
+        t.estado === 'pendiente' && new Date(t.fecha_hora) <= ahora
+    );
+
+    for (const tarea of vencidas) {
+        actualizarTareaAgenda(tarea.id, { estado: 'en_proceso' });
+        console.log(`[AGENDA] Disparando tarea vencida: ${tarea.canal_nombre} (programada ${tarea.fecha_hora})`);
+
+        generarVideoCanal(tarea.canal_id, tarea.modo, tarea.contenido, (resultado) => {
+            if (resultado.ok) {
+                actualizarTareaAgenda(tarea.id, {
+                    estado: 'completado',
+                    resultado: { url: resultado.url, videoId: resultado.videoId },
+                    ejecutado_en: new Date().toISOString()
+                });
+                console.log(`[AGENDA] Completado: ${tarea.canal_nombre} -> ${resultado.url}`);
+            } else {
+                actualizarTareaAgenda(tarea.id, {
+                    estado: 'fallido',
+                    resultado: { error: resultado.error },
+                    ejecutado_en: new Date().toISOString()
+                });
+                console.log(`[AGENDA] Fallido: ${tarea.canal_nombre} -> ${resultado.error}`);
+            }
+        });
+    }
+}
+
+// Revisa cada 60 segundos
+setInterval(procesarAgendaVencida, 60 * 1000);
+
 app.listen(PORT, () => {
     console.log(`Dashboard corriendo en puerto ${PORT}`);
+    // Al arrancar, procesa de inmediato lo que haya vencido mientras
+    // el servidor (o la PC) estaba apagado.
+    setTimeout(procesarAgendaVencida, 3000);
 });
- 
