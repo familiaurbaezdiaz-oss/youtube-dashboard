@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 const fs = require('fs');
 
 const app = express();
@@ -39,6 +39,34 @@ const AGENDA_FILE = path.join(__dirname, 'agenda.json');
 const canalesEnProceso = new Set();
 
 // ============================================================
+//  PROGRESO EN VIVO: guardado en memoria, expuesto via API
+//  Estructura: { [canal_id]: { porcentaje: 0-100, etapa: "texto", actualizado_en: ts } }
+// ============================================================
+const progresoCanales = {};
+
+const ETAPAS_PROGRESO = {
+    5: "Generando guion",
+    15: "Generando audio/voz",
+    70: "Buscando imagenes y generando video",
+    82: "Agregando musica de fondo",
+    90: "Creando miniatura (thumbnail)",
+    96: "Subiendo a YouTube",
+    100: "Completado"
+};
+
+function setProgreso(canal_id, porcentaje) {
+    progresoCanales[canal_id] = {
+        porcentaje,
+        etapa: ETAPAS_PROGRESO[porcentaje] || "Procesando",
+        actualizado_en: Date.now()
+    };
+}
+
+function limpiarProgreso(canal_id) {
+    delete progresoCanales[canal_id];
+}
+
+// ============================================================
 //  AGENDA: persistencia simple en archivo JSON
 // ============================================================
 function leerAgenda() {
@@ -73,6 +101,36 @@ function actualizarTareaAgenda(id, cambios) {
 }
 
 // ============================================================
+//  ARCHIVADO AUTOMATICO: borra tareas finalizadas hace mas de
+//  24 horas. Solo nos importa el video (que ya quedo en YouTube),
+//  no el registro de la tarea en si.
+// ============================================================
+const HORAS_ANTES_DE_ARCHIVAR = 24;
+
+function archivarTareasViejas() {
+    const tareas = leerAgenda();
+    const ahora = Date.now();
+    const limiteMs = HORAS_ANTES_DE_ARCHIVAR * 60 * 60 * 1000;
+
+    const restantes = tareas.filter(t => {
+        const esFinal = t.estado === 'completado' || t.estado === 'fallido' || t.estado === 'cancelado';
+        if (!esFinal) return true;
+        const refFecha = t.ejecutado_en || t.creado_en;
+        if (!refFecha) return true;
+        const edadMs = ahora - new Date(refFecha).getTime();
+        return edadMs < limiteMs;
+    });
+
+    if (restantes.length !== tareas.length) {
+        guardarAgenda(restantes);
+        console.log(`[ARCHIVADO] ${tareas.length - restantes.length} tarea(s) finalizada(s) hace mas de ${HORAS_ANTES_DE_ARCHIVAR}h eliminadas del historial.`);
+    }
+}
+
+// Revisa cada 30 minutos
+setInterval(archivarTareasViejas, 30 * 60 * 1000);
+
+// ============================================================
 //  GENERACION DE VIDEO (logica reutilizable)
 //  Usada tanto por /api/generar-video (inmediato) como por el
 //  scheduler de la agenda (programado).
@@ -88,6 +146,7 @@ function generarVideoCanal(canal_id, modo, contenido, onResultado) {
         return;
     }
     canalesEnProceso.add(canal_id);
+    setProgreso(canal_id, 1);
 
     const carpeta = `${BASE}\\${config.carpeta}`;
     const contenidoEscapado = contenido
@@ -120,6 +179,7 @@ modo = "${modo}"
 contenido = "${contenidoEscapado}"
 
 print(f"Iniciando pipeline para {NOMBRE_CANAL} - modo: {modo}", flush=True)
+print("PROGRESS:5", flush=True)
 
 if modo == "idea":
     resultado = generar_script(contenido, "short")
@@ -128,17 +188,20 @@ else:
     script = contenido
 
 tema = contenido[:80]
+print("PROGRESS:15", flush=True)
 ruta_audio = generar_audio(script)
 if not ruta_audio:
     print("ERROR: No se pudo generar audio", flush=True)
     sys.exit(1)
 
 busquedas = extraer_imagenes_del_script(script, tema)
+print("PROGRESS:70", flush=True)
 ruta_video = generar_video_multitema(busquedas, ruta_audio)
 if not ruta_video:
     print("ERROR: No se pudo generar video", flush=True)
     sys.exit(1)
 
+print("PROGRESS:82", flush=True)
 ruta_musica = obtener_musica_fondo("${config.musica}", 30)
 if ruta_musica:
     voz = AudioFileClip(ruta_audio)
@@ -154,56 +217,127 @@ if ruta_musica:
 else:
     ruta_final = ruta_video
 
+print("PROGRESS:90", flush=True)
 titulo_gancho = generar_titulo_gancho(script, tema)
 ruta_thumbnail = crear_thumbnail(titulo=titulo_gancho, nombre_canal=NOMBRE_CANAL, logo_path=LOGO_CANAL, color_canal=COLOR_CANAL)
 titulo, descripcion = generar_titulo_y_descripcion(tema, script, titulo_gancho)
+
+print("PROGRESS:96", flush=True)
 video_id = subir_video(ruta_final, titulo, descripcion, ruta_thumbnail=ruta_thumbnail, tema=tema)
 if video_id:
     print(f"SUCCESS:{video_id}", flush=True)
 else:
     print("ERROR: No se pudo subir", flush=True)
+
+# Cierre explicito de recursos para evitar que el proceso quede
+# colgado tras imprimir SUCCESS (moviepy/ffmpeg/whisper en Windows
+# a veces no liberan handles internos al salir).
+try:
+    if ruta_musica:
+        voz.close()
+        musica.close()
+        video.close()
+        video_clip.close()
+except Exception:
+    pass
+
+sys.stdout.flush()
+sys.exit(0)
 `;
 
     const tempFile = `${BASE}\\temp_video_${Date.now()}.py`;
     fs.writeFileSync(tempFile, scriptPy, 'utf8');
     console.log(`Generando video para ${config.nombre} - modo: ${modo}`);
 
-    exec(
-        `"${PYTHON_GLOBAL}" -X utf8 "${tempFile}"`,
+    const proceso = spawn(
+        PYTHON_GLOBAL,
+        ['-X', 'utf8', tempFile],
         {
             cwd: carpeta,
-            timeout: 600000,
             env: { ...process.env, PYTHONIOENCODING: 'utf-8' }
-        },
-        (err, stdout, stderr) => {
-            console.log(`\n==============================`);
-            console.log(`CANAL: ${config.nombre}`);
-            console.log(`==============================`);
-            if (stdout) { console.log("\n===== STDOUT COMPLETO ====="); console.log(stdout); }
-            if (stderr) { console.log("\n===== STDERR COMPLETO ====="); console.log(stderr); }
-
-            let resultado = { ok: false, error: "Error desconocido" };
-
-            if (err) {
-                console.log("\n===== ERROR COMPLETO =====");
-                console.log(err);
-                resultado = { ok: false, error: err.message || String(err) };
-            } else {
-                const ok = stdout.split('\n').find(l => l.startsWith('SUCCESS:'));
-                if (ok) {
-                    const videoId = ok.replace('SUCCESS:', '').trim();
-                    console.log(`Video publicado ${config.nombre}: https://youtube.com/shorts/${videoId}`);
-                    resultado = { ok: true, videoId, url: `https://youtube.com/shorts/${videoId}` };
-                } else {
-                    resultado = { ok: false, error: "No se encontro SUCCESS en la salida" };
-                }
-            }
-
-            try { fs.unlinkSync(tempFile); } catch (e) {}
-            canalesEnProceso.delete(canal_id);
-            onResultado(resultado);
         }
     );
+
+    let stdoutCompleto = '';
+    let stderrCompleto = '';
+    let timedOut = false;
+
+    // Mismo margen que antes (15 minutos)
+    const timeoutHandle = setTimeout(() => {
+        timedOut = true;
+        try { proceso.kill(); } catch (e) {}
+    }, 900000);
+
+    proceso.stdout.on('data', (chunk) => {
+        const texto = chunk.toString();
+        stdoutCompleto += texto;
+
+        // Buscamos marcadores PROGRESS:N en cada linea que vaya llegando
+        const lineas = texto.split('\n');
+        for (const linea of lineas) {
+            const m = linea.match(/^PROGRESS:(\d+)/);
+            if (m) {
+                setProgreso(canal_id, parseInt(m[1], 10));
+            }
+        }
+    });
+
+    proceso.stderr.on('data', (chunk) => {
+        stderrCompleto += chunk.toString();
+    });
+
+    proceso.on('close', (codigo) => {
+        clearTimeout(timeoutHandle);
+
+        console.log(`\n==============================`);
+        console.log(`CANAL: ${config.nombre}`);
+        console.log(`==============================`);
+        if (stdoutCompleto) { console.log("\n===== STDOUT COMPLETO ====="); console.log(stdoutCompleto); }
+        if (stderrCompleto) { console.log("\n===== STDERR COMPLETO ====="); console.log(stderrCompleto); }
+
+        let resultado = { ok: false, error: "Error desconocido" };
+
+        // SIEMPRE buscamos SUCCESS: en el stdout, haya o no error de proceso.
+        // Si el video ya se subio (Whisper/moviepy pueden colgar el cierre del
+        // proceso DESPUES de imprimir SUCCESS), lo contamos como exito real.
+        const successLine = stdoutCompleto.split('\n').find(l => l.startsWith('SUCCESS:'));
+
+        if (successLine) {
+            const videoId = successLine.replace('SUCCESS:', '').trim();
+            console.log(`Video publicado ${config.nombre}: https://youtube.com/shorts/${videoId}`);
+            if (timedOut) {
+                console.log(`(Nota: el proceso se mato por timeout DESPUES de subir el video)`);
+            } else if (codigo !== 0) {
+                console.log(`(Nota: el proceso reporto codigo de salida ${codigo} DESPUES de subir el video)`);
+            }
+            setProgreso(canal_id, 100);
+            resultado = { ok: true, videoId, url: `https://youtube.com/shorts/${videoId}` };
+        } else if (timedOut) {
+            resultado = { ok: false, error: "Tiempo de espera agotado (15 min) sin completar el video" };
+        } else if (codigo !== 0) {
+            console.log("\n===== ERROR (codigo de salida) =====");
+            console.log(`Codigo: ${codigo}`);
+            resultado = { ok: false, error: stderrCompleto ? stderrCompleto.slice(-500) : `Proceso termino con codigo ${codigo}` };
+        } else {
+            resultado = { ok: false, error: "No se encontro SUCCESS en la salida" };
+        }
+
+        try { fs.unlinkSync(tempFile); } catch (e) {}
+        canalesEnProceso.delete(canal_id);
+        // Dejamos el progreso en 100 (o lo que sea) un par de segundos para
+        // que el frontend alcance a verlo antes de limpiarlo.
+        setTimeout(() => limpiarProgreso(canal_id), 5000);
+        onResultado(resultado);
+    });
+
+    proceso.on('error', (err) => {
+        clearTimeout(timeoutHandle);
+        console.log(`Error lanzando proceso para ${config.nombre}:`, err);
+        try { fs.unlinkSync(tempFile); } catch (e) {}
+        canalesEnProceso.delete(canal_id);
+        limpiarProgreso(canal_id);
+        onResultado({ ok: false, error: err.message || String(err) });
+    });
 }
 
 // ============================================================
@@ -230,13 +364,50 @@ app.post('/api/generar-video', (req, res) => {
         url: `https://studio.youtube.com/channel/${canal_id}/videos`
     });
 
+    // Creamos una tarea temporal "en_proceso" en la agenda para que el
+    // frontend pueda mostrar la barra de progreso en vivo de este video,
+    // igual que con los videos agendados. Se actualiza/borra cuando termine.
+    const tareaTemporal = {
+        id: `inmediato_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        canal_id,
+        canal_nombre: config.nombre,
+        modo,
+        contenido,
+        fecha_hora: new Date().toISOString(),
+        estado: 'en_proceso',
+        creado_en: new Date().toISOString(),
+        resultado: null,
+        esInmediato: true
+    };
+    agregarTareaAgenda(tareaTemporal);
+
     generarVideoCanal(canal_id, modo, contenido, (resultado) => {
         if (resultado.ok) {
             console.log(`OK inmediato: ${config.nombre} -> ${resultado.url}`);
+            actualizarTareaAgenda(tareaTemporal.id, {
+                estado: 'completado',
+                resultado: { url: resultado.url, videoId: resultado.videoId },
+                ejecutado_en: new Date().toISOString()
+            });
         } else {
             console.log(`FALLO inmediato: ${config.nombre} -> ${resultado.error}`);
+            actualizarTareaAgenda(tareaTemporal.id, {
+                estado: 'fallido',
+                resultado: { error: resultado.error },
+                ejecutado_en: new Date().toISOString()
+            });
         }
     });
+});
+
+// Progreso en vivo de un canal (polling desde el frontend)
+app.get('/api/progreso/:canal_id', (req, res) => {
+    const { canal_id } = req.params;
+    const info = progresoCanales[canal_id];
+    if (!info) {
+        return res.json({ success: true, enProceso: canalesEnProceso.has(canal_id), porcentaje: null, etapa: null });
+    }
+    res.json({ success: true, enProceso: true, porcentaje: info.porcentaje, etapa: info.etapa });
 });
 
 // Agendar para mas tarde / otro dia
@@ -353,4 +524,5 @@ app.listen(PORT, () => {
     // Al arrancar, procesa de inmediato lo que haya vencido mientras
     // el servidor (o la PC) estaba apagado.
     setTimeout(procesarAgendaVencida, 3000);
+    setTimeout(archivarTareasViejas, 5000);
 });
