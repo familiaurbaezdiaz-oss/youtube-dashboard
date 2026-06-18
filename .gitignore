@@ -2,3 +2,4 @@ agenda.json
 log_servidor.txt
 *.bak* 
 *.bak* 
+.env 

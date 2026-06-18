@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { spawn } = require('child_process');
@@ -631,6 +632,62 @@ function procesarAgendaVencida() {
 
 // Revisa cada 60 segundos
 setInterval(procesarAgendaVencida, 60 * 1000);
+
+// Proxy hacia YouTube Data API v3. La clave vive solo aqui, en el
+// servidor (variable de entorno YOUTUBE_API_KEY), nunca en el HTML
+// que es publico en GitHub.
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || "";
+
+app.get('/api/youtube/canal-stats', async (req, res) => {
+    const { canal_id } = req.query;
+    if (!canal_id) return res.json({ success: false, error: "Falta canal_id" });
+    try {
+        const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${canal_id}&key=${YOUTUBE_API_KEY}`);
+        const d = await r.json();
+        const s = d.items?.[0]?.statistics || {};
+        res.json({
+            success: true,
+            suscriptores: parseInt(s.subscriberCount || 0),
+            vistas: parseInt(s.viewCount || 0),
+            videos: parseInt(s.videoCount || 0)
+        });
+    } catch (e) {
+        res.json({ success: false, error: e.message });
+    }
+});
+
+app.get('/api/youtube/comentarios-recientes', async (req, res) => {
+    const { canal_id } = req.query;
+    if (!canal_id) return res.json({ success: false, error: "Falta canal_id" });
+    try {
+        const rV = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${canal_id}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`);
+        const dV = await rV.json();
+        const videos = dV.items || [];
+        let todos = [];
+        for (const v of videos.slice(0, 3)) {
+            const vid = v.id.videoId;
+            if (!vid) continue;
+            const rC = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${vid}&maxResults=5&order=time&key=${YOUTUBE_API_KEY}`);
+            const dC = await rC.json();
+            if (dC.items) dC.items.forEach(item => {
+                const c = item.snippet.topLevelComment.snippet;
+                todos.push({
+                    id: item.id, videoId: vid,
+                    videoTitulo: v.snippet.title,
+                    autor: c.authorDisplayName,
+                    texto: c.textDisplay,
+                    likes: c.likeCount,
+                    fecha: new Date(c.publishedAt).toLocaleDateString('es-DO'),
+                    timestamp: new Date(c.publishedAt).getTime()
+                });
+            });
+        }
+        todos.sort((a, b) => b.timestamp - a.timestamp);
+        res.json({ success: true, comentarios: todos });
+    } catch (e) {
+        res.json({ success: false, error: e.message });
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`Dashboard corriendo en puerto ${PORT}`);

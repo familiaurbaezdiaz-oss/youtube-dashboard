@@ -222,7 +222,6 @@
 </div>
 
 <script>
-const API_KEY = "AIzaSyCnvYmEePkUpdGm4lc7wcRuKnYAXojq07Y";
 
 const CANALES_ACTIVOS = [
     { nombre: "Fit Tips Latino",      id: "UCtCF9WMqwa5vCjgLNyx5zaw", color: "#FF6B6B", emoji: "💪" },
@@ -278,37 +277,18 @@ function colorSemaforoSubsPor1000(valor) {
 }
 
 async function fetchCanalStats(canal) {
-    const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${canal.id}&key=${API_KEY}`);
+    const r = await fetch(`/api/youtube/canal-stats?canal_id=${canal.id}`);
     const d = await r.json();
-    const s = d.items?.[0]?.statistics||{};
-    return {...canal, suscriptores:parseInt(s.subscriberCount||0), vistas:parseInt(s.viewCount||0), videos:parseInt(s.videoCount||0)};
+    if (!d.success) return {...canal, suscriptores:0, vistas:0, videos:0};
+    return {...canal, suscriptores:d.suscriptores, vistas:d.vistas, videos:d.videos};
 }
 
 async function fetchComentariosRecientes(canalId) {
     try {
-        const rV = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${canalId}&maxResults=5&order=date&type=video&key=${API_KEY}`);
-        const dV = await rV.json();
-        const videos = dV.items||[];
-        let todos = [];
-        for(const v of videos.slice(0,3)){
-            const vid=v.id.videoId; if(!vid) continue;
-            const rC = await fetch(`https://www.googleapis.com/youtube/v3/commentThreads?part=snippet&videoId=${vid}&maxResults=5&order=time&key=${API_KEY}`);
-            const dC = await rC.json();
-            if(dC.items) dC.items.forEach(item=>{
-                const c=item.snippet.topLevelComment.snippet;
-                todos.push({
-                    id:item.id, videoId:vid,
-                    videoTitulo:v.snippet.title,
-                    autor:c.authorDisplayName,
-                    texto:c.textDisplay,
-                    likes:c.likeCount,
-                    fecha:new Date(c.publishedAt).toLocaleDateString('es-DO'),
-                    timestamp: new Date(c.publishedAt).getTime()
-                });
-            });
-        }
-        todos.sort((a,b)=>b.timestamp-a.timestamp);
-        return todos;
+        const r = await fetch(`/api/youtube/comentarios-recientes?canal_id=${canalId}`);
+        const d = await r.json();
+        if (!d.success) return [];
+        return d.comentarios;
     } catch(e){ return []; }
 }
 
