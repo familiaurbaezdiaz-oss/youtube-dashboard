@@ -188,11 +188,15 @@ function generarVideoCanal(canal_id, modo, contenido, onResultado) {
         onResultado({ ok: false, error: "Canal no encontrado" });
         return;
     }
-    // No hace falta bloquear por canal duplicado: la cola global ya
-    // garantiza que solo un proceso de Python corre a la vez en todo
-    // el sistema, sin importar el canal. Si el mismo canal tiene 2+
-    // tareas, simplemente se encolan ambas y se procesan en orden
-    // (la mas antigua primero, gracias al ordenamiento en el scheduler).
+    // Solo bloqueamos si ese canal especifico esta corriendo SU PROCESO
+    // de Python en este instante. Si solo esta en cola (esperando turno
+    // junto a otros trabajos, incluso del mismo canal), lo dejamos pasar:
+    // la cola global ya garantiza que se procesen de uno en uno, en el
+    // orden en que se agendaron/solicitaron (el mas antiguo primero).
+    if (canalEjecutandoseAhora === canal_id) {
+        onResultado({ ok: false, error: `Ya hay un video generandose para ${config.nombre} en este momento.` });
+        return;
+    }
     encolarVideo({ canal_id, modo, contenido, onResultado });
 }
 
@@ -602,28 +606,12 @@ function procesarAgendaVencida() {
                 });
                 console.log(`[AGENDA] Completado: ${tarea.canal_nombre} -> ${resultado.url}`);
             } else {
-                // Reintento automatico solo para errores de concurrencia
-                // (no deberian ocurrir tras el fix de la cola, pero por
-                // seguridad reagendamos en vez de perder el video).
-                const esErrorConcurrencia = resultado.error && resultado.error.includes('Ya hay un video generandose');
-                const intentosPrevios = tarea.intentos || 0;
-                const MAX_INTENTOS = 3;
-
-                if (esErrorConcurrencia && intentosPrevios < MAX_INTENTOS) {
-                    actualizarTareaAgenda(tarea.id, {
-                        estado: 'pendiente',
-                        fecha_hora: new Date(Date.now() + 30000).toISOString(), // reintenta en 30s
-                        intentos: intentosPrevios + 1
-                    });
-                    console.log(`[AGENDA] Reintento ${intentosPrevios + 1}/${MAX_INTENTOS} programado para ${tarea.canal_nombre} (error de concurrencia)`);
-                } else {
-                    actualizarTareaAgenda(tarea.id, {
-                        estado: 'fallido',
-                        resultado: { error: resultado.error },
-                        ejecutado_en: new Date().toISOString()
-                    });
-                    console.log(`[AGENDA] Fallido: ${tarea.canal_nombre} -> ${resultado.error}`);
-                }
+                actualizarTareaAgenda(tarea.id, {
+                    estado: 'fallido',
+                    resultado: { error: resultado.error },
+                    ejecutado_en: new Date().toISOString()
+                });
+                console.log(`[AGENDA] Fallido: ${tarea.canal_nombre} -> ${resultado.error}`);
             }
         });
     }

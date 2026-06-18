@@ -196,31 +196,6 @@
     </div>
 </div>
 
-<!-- MODAL EDITAR AGENDA -->
-<div class="modal-overlay" id="modalEditarAgenda" onclick="cerrarEditarAgenda(event)">
-    <div class="modal" style="max-width:500px;">
-        <div class="modal-header">
-            <div class="modal-title">✏️ Editar video agendado</div>
-            <button class="modal-close" onclick="document.getElementById('modalEditarAgenda').classList.remove('active')">✕</button>
-        </div>
-        <div class="modal-canal-info" id="editarCanalInfo"></div>
-        <label class="input-label">Contenido (tema/idea/guion):</label>
-        <textarea id="editarContenido" style="min-height:120px;"></textarea>
-        <div id="editarFechaBloque" style="margin-top:15px;">
-            <label class="input-label">Fecha y hora de ejecucion:</label>
-            <div class="agenda-fila">
-                <input type="date" id="editarFecha">
-                <input type="time" id="editarHora">
-            </div>
-        </div>
-        <div id="editarAvisoEnCola" style="display:none;background:#2a2a00;border:1px solid #FFD700;border-radius:10px;padding:12px;margin-top:10px;font-size:0.85rem;color:#FFD700;">
-            ⚠️ Esta tarea ya esta en cola esperando turno. Solo puedes editar el contenido, no la fecha/hora.
-        </div>
-        <button class="btn-generar" id="btnGuardarEdicionAgenda" onclick="guardarEdicionAgenda()" style="background:#00d4ff;color:#000;">💾 Guardar cambios</button>
-        <div class="status-box" id="statusEditarAgenda"></div>
-    </div>
-</div>
-
 <script>
 const API_KEY = "AIzaSyBkOvvnGV2v_sCIpCFcZA6lGHBLglrDS2I";
 
@@ -571,8 +546,6 @@ async function consultarProgreso(canalId) {
     }
 }
 
-let tareasPorId = {};
-
 async function cargarAgenda() {
     const cont = document.getElementById('agenda-lista');
     if (!cont) return;
@@ -605,24 +578,15 @@ async function cargarAgenda() {
                 : '';
 
             let progresoHtml = '';
-            let enColaEsperandoTurno = false;
             if (t.estado === 'en_proceso') {
                 const info = progresos[t.canal_id];
                 const pct = (info && info.porcentaje != null) ? info.porcentaje : 0;
                 const etapa = (info && info.etapa) ? info.etapa : 'Iniciando...';
-                enColaEsperandoTurno = etapa.indexOf('En cola') === 0;
                 progresoHtml = '<div class="agenda-progreso-wrap">' +
                     '<div class="agenda-progreso-label"><span>' + etapa + '</span><span>' + pct + '%</span></div>' +
                     '<div class="agenda-progreso-bar"><div class="agenda-progreso-fill" style="width:' + pct + '%;"></div></div>' +
                     '</div>';
             }
-
-            const esEditable = t.estado === 'pendiente' || enColaEsperandoTurno;
-            const editarBtn = esEditable
-                ? '<button class="btn-cancelar-agenda" style="border-color:#00d4ff;color:#00d4ff;" onclick="abrirEditarAgenda(' + q + t.id + q + ')">Editar</button>'
-                : '';
-
-            tareasPorId[t.id] = t;
 
             return '<div class="agenda-lista-item">' +
                 '<span class="agenda-canal">' + t.canal_nombre + '</span>' +
@@ -631,7 +595,6 @@ async function cargarAgenda() {
                 '<div class="agenda-contenido">' + t.contenido.substring(0, 100) + (t.contenido.length > 100 ? '...' : '') + '</div>' +
                 progresoHtml +
                 resultadoHtml +
-                editarBtn +
                 cancelarBtn +
                 borrarBtn +
                 '</div>';
@@ -662,81 +625,6 @@ async function borrarAgenda(id) {
         else alert('Error: ' + data.error);
     } catch (e) {
         alert('Error: ' + e.message);
-    }
-}
-
-let idTareaEditando = null;
-
-function abrirEditarAgenda(id) {
-    const tarea = tareasPorId[id];
-    if (!tarea) return alert('No se encontro la tarea');
-    idTareaEditando = id;
-
-    const enCola = tarea.estado === 'en_proceso';
-    document.getElementById('editarCanalInfo').textContent = 'Canal: ' + tarea.canal_nombre;
-    document.getElementById('editarContenido').value = tarea.contenido;
-    document.getElementById('editarAvisoEnCola').style.display = enCola ? 'block' : 'none';
-    document.getElementById('editarFechaBloque').style.display = enCola ? 'none' : 'block';
-
-    if (!enCola) {
-        const f = new Date(tarea.fecha_hora);
-        const pad = n => String(n).padStart(2, '0');
-        document.getElementById('editarFecha').value = f.getFullYear() + '-' + pad(f.getMonth() + 1) + '-' + pad(f.getDate());
-        document.getElementById('editarHora').value = pad(f.getHours()) + ':' + pad(f.getMinutes());
-    }
-
-    document.getElementById('statusEditarAgenda').classList.remove('active');
-    document.getElementById('statusEditarAgenda').innerHTML = '';
-    document.getElementById('btnGuardarEdicionAgenda').disabled = false;
-    document.getElementById('btnGuardarEdicionAgenda').textContent = '💾 Guardar cambios';
-    document.getElementById('modalEditarAgenda').classList.add('active');
-}
-
-function cerrarEditarAgenda(e) {
-    if (!e || e.target === document.getElementById('modalEditarAgenda')) {
-        document.getElementById('modalEditarAgenda').classList.remove('active');
-    }
-}
-
-async function guardarEdicionAgenda() {
-    if (!idTareaEditando) return;
-    const tarea = tareasPorId[idTareaEditando];
-    const contenido = document.getElementById('editarContenido').value.trim();
-    if (!contenido) return alert('El contenido no puede quedar vacio');
-
-    const body = { id: idTareaEditando, contenido };
-
-    const enCola = tarea && tarea.estado === 'en_proceso';
-    if (!enCola) {
-        const fecha = document.getElementById('editarFecha').value;
-        const hora = document.getElementById('editarHora').value;
-        if (!fecha || !hora) return alert('Selecciona fecha y hora');
-        const local = new Date(fecha + 'T' + hora + ':00');
-        if (isNaN(local.getTime())) return alert('Fecha/hora invalida');
-        body.fecha_hora = local.toISOString();
-    }
-
-    const status = document.getElementById('statusEditarAgenda');
-    const btn = document.getElementById('btnGuardarEdicionAgenda');
-    btn.disabled = true; btn.textContent = '⏳ Guardando...';
-
-    try {
-        const res = await fetch('/api/agenda/editar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        const data = await res.json();
-        if (data.success) {
-            status.innerHTML = '<div class="status-line ok">✅ Cambios guardados</div>';
-            status.classList.add('active');
-            cargarAgenda();
-            setTimeout(() => document.getElementById('modalEditarAgenda').classList.remove('active'), 800);
-        } else {
-            status.innerHTML = '<div class="status-line error">❌ ' + data.error + '</div>';
-            status.classList.add('active');
-            btn.disabled = false; btn.textContent = '💾 Guardar cambios';
-        }
-    } catch (e) {
-        status.innerHTML = '<div class="status-line error">❌ Error: ' + e.message + '</div>';
-        status.classList.add('active');
-        btn.disabled = false; btn.textContent = '💾 Guardar cambios';
     }
 }
 

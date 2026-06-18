@@ -36,52 +36,7 @@ const BASE = "C:\\Users\\hanse\\Desktop\\PROYECTOS";
 const PYTHON_GLOBAL = "C:\\Users\\hanse\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe";
 const AGENDA_FILE = path.join(__dirname, 'agenda.json');
 
-// Solo puede haber UN canal ejecutandose realmente en este instante,
-// ya que la cola global garantiza un solo proceso de Python a la vez.
-let canalEjecutandoseAhora = null;
-
-// ============================================================
-//  COLA GLOBAL: solo un video se genera a la vez en todo el
-//  sistema, sin importar el canal. Si llegan varias solicitudes
-//  juntas (ej. el usuario pide 4-8 videos de golpe), se procesan
-//  una por una en orden de llegada, en vez de saturar la PC
-//  corriendo varios moviepy/Whisper al mismo tiempo (lo cual
-//  hacia que cada uno se volviera tan lento que superaba el
-//  timeout de 15 min).
-// ============================================================
-let procesoActivo = false;
-const colaVideos = [];
-
-function encolarVideo(trabajo) {
-    colaVideos.push(trabajo);
-    actualizarPosicionesEnCola();
-    procesarSiguienteEnCola();
-}
-
-function actualizarPosicionesEnCola() {
-    colaVideos.forEach((trabajo, idx) => {
-        progresoCanales[trabajo.canal_id] = {
-            porcentaje: 0,
-            etapa: `En cola (posicion ${idx + 1})`,
-            actualizado_en: Date.now()
-        };
-    });
-}
-
-function procesarSiguienteEnCola() {
-    if (procesoActivo) return;
-    const trabajo = colaVideos.shift();
-    if (!trabajo) return;
-
-    actualizarPosicionesEnCola();
-    procesoActivo = true;
-    ejecutarGeneracionVideo(trabajo.canal_id, trabajo.modo, trabajo.contenido, (resultado) => {
-        procesoActivo = false;
-        trabajo.onResultado(resultado);
-        // En cuanto termina uno, intentamos el siguiente de la cola.
-        procesarSiguienteEnCola();
-    });
-}
+const canalesEnProceso = new Set();
 
 // ============================================================
 //  PROGRESO EN VIVO: guardado en memoria, expuesto via API
@@ -177,10 +132,8 @@ setInterval(archivarTareasViejas, 30 * 60 * 1000);
 
 // ============================================================
 //  GENERACION DE VIDEO (logica reutilizable)
-//  generarVideoCanal() es el punto de entrada publico: encola el
-//  trabajo y devuelve el control de inmediato. ejecutarGeneracionVideo()
-//  es la logica real que lanza el proceso de Python, y solo la
-//  llama internamente procesarSiguienteEnCola() cuando le toca turno.
+//  Usada tanto por /api/generar-video (inmediato) como por el
+//  scheduler de la agenda (programado).
 // ============================================================
 function generarVideoCanal(canal_id, modo, contenido, onResultado) {
     const config = CANALES_CONFIG[canal_id];
@@ -188,21 +141,11 @@ function generarVideoCanal(canal_id, modo, contenido, onResultado) {
         onResultado({ ok: false, error: "Canal no encontrado" });
         return;
     }
-    // No hace falta bloquear por canal duplicado: la cola global ya
-    // garantiza que solo un proceso de Python corre a la vez en todo
-    // el sistema, sin importar el canal. Si el mismo canal tiene 2+
-    // tareas, simplemente se encolan ambas y se procesan en orden
-    // (la mas antigua primero, gracias al ordenamiento en el scheduler).
-    encolarVideo({ canal_id, modo, contenido, onResultado });
-}
-
-function ejecutarGeneracionVideo(canal_id, modo, contenido, onResultado) {
-    const config = CANALES_CONFIG[canal_id];
-    if (!config) {
-        onResultado({ ok: false, error: "Canal no encontrado" });
+    if (canalesEnProceso.has(canal_id)) {
+        onResultado({ ok: false, error: `Ya hay un video generandose para ${config.nombre}.` });
         return;
     }
-    canalEjecutandoseAhora = canal_id;
+    canalesEnProceso.add(canal_id);
     setProgreso(canal_id, 1);
 
     const carpeta = `${BASE}\\${config.carpeta}`;
@@ -380,7 +323,7 @@ sys.exit(0)
         }
 
         try { fs.unlinkSync(tempFile); } catch (e) {}
-        canalEjecutandoseAhora = null;
+        canalesEnProceso.delete(canal_id);
         // Dejamos el progreso en 100 (o lo que sea) un par de segundos para
         // que el frontend alcance a verlo antes de limpiarlo.
         setTimeout(() => limpiarProgreso(canal_id), 5000);
@@ -391,7 +334,7 @@ sys.exit(0)
         clearTimeout(timeoutHandle);
         console.log(`Error lanzando proceso para ${config.nombre}:`, err);
         try { fs.unlinkSync(tempFile); } catch (e) {}
-        canalEjecutandoseAhora = null;
+        canalesEnProceso.delete(canal_id);
         limpiarProgreso(canal_id);
         onResultado({ ok: false, error: err.message || String(err) });
     });
@@ -410,6 +353,9 @@ app.post('/api/generar-video', (req, res) => {
     const config = CANALES_CONFIG[canal_id];
     if (!config) {
         return res.json({ success: false, error: "Canal no encontrado" });
+    }
+    if (canalesEnProceso.has(canal_id)) {
+        return res.json({ success: false, error: `Ya hay un video generandose para ${config.nombre}. Espera a que termine antes de generar otro.` });
     }
 
     res.json({
@@ -459,7 +405,7 @@ app.get('/api/progreso/:canal_id', (req, res) => {
     const { canal_id } = req.params;
     const info = progresoCanales[canal_id];
     if (!info) {
-        return res.json({ success: true, enProceso: canalEjecutandoseAhora === canal_id, porcentaje: null, etapa: null });
+        return res.json({ success: true, enProceso: canalesEnProceso.has(canal_id), porcentaje: null, etapa: null });
     }
     res.json({ success: true, enProceso: true, porcentaje: info.porcentaje, etapa: info.etapa });
 });
@@ -506,49 +452,6 @@ app.get('/api/agenda', (req, res) => {
 });
 
 // Cancelar una tarea pendiente
-// Editar contenido y/o fecha_hora de una tarea (pendiente o en cola,
-// es decir: en_proceso pero que TODAVIA no le toco turno realmente).
-app.post('/api/agenda/editar', (req, res) => {
-    const { id, contenido, fecha_hora } = req.body;
-    if (!id) return res.json({ success: false, error: "Falta id" });
-    if (!contenido && !fecha_hora) {
-        return res.json({ success: false, error: "Nada que editar (falta contenido o fecha_hora)" });
-    }
-
-    const tareas = leerAgenda();
-    const idx = tareas.findIndex(t => t.id === id);
-    if (idx === -1) return res.json({ success: false, error: "Tarea no encontrada" });
-
-    const tarea = tareas[idx];
-    const realmenteEjecutandose = canalEjecutandoseAhora === tarea.canal_id && tarea.estado === 'en_proceso';
-
-    if (tarea.estado === 'pendiente') {
-        // Editable libremente, todavia no se ha disparado.
-    } else if (tarea.estado === 'en_proceso' && !realmenteEjecutandose) {
-        // Esta en cola esperando turno, no ejecutandose de verdad: editable.
-        // No editamos fecha_hora en este caso porque ya venció y por eso
-        // entro a la cola; solo permitimos cambiar el contenido.
-        if (fecha_hora) {
-            return res.json({ success: false, error: "Esta tarea ya esta en cola esperando turno, solo puedes editar el contenido (no la fecha/hora)." });
-        }
-    } else {
-        return res.json({ success: false, error: "No se puede editar una tarea que ya esta ejecutandose, completada, fallida o cancelada." });
-    }
-
-    if (contenido) tarea.contenido = contenido;
-    if (fecha_hora && tarea.estado === 'pendiente') {
-        const fechaObjetivo = new Date(fecha_hora);
-        if (isNaN(fechaObjetivo.getTime())) {
-            return res.json({ success: false, error: "fecha_hora invalida" });
-        }
-        tarea.fecha_hora = fechaObjetivo.toISOString();
-    }
-
-    tareas[idx] = tarea;
-    guardarAgenda(tareas);
-    res.json({ success: true, tarea });
-});
-
 app.post('/api/agenda/cancelar', (req, res) => {
     const { id } = req.body;
     if (!id) return res.json({ success: false, error: "Falta id" });
@@ -585,9 +488,9 @@ function procesarAgendaVencida() {
     const tareas = leerAgenda();
     const ahora = new Date();
 
-    const vencidas = tareas
-        .filter(t => t.estado === 'pendiente' && new Date(t.fecha_hora) <= ahora)
-        .sort((a, b) => new Date(a.fecha_hora) - new Date(b.fecha_hora));
+    const vencidas = tareas.filter(t =>
+        t.estado === 'pendiente' && new Date(t.fecha_hora) <= ahora
+    );
 
     for (const tarea of vencidas) {
         actualizarTareaAgenda(tarea.id, { estado: 'en_proceso' });
@@ -602,28 +505,12 @@ function procesarAgendaVencida() {
                 });
                 console.log(`[AGENDA] Completado: ${tarea.canal_nombre} -> ${resultado.url}`);
             } else {
-                // Reintento automatico solo para errores de concurrencia
-                // (no deberian ocurrir tras el fix de la cola, pero por
-                // seguridad reagendamos en vez de perder el video).
-                const esErrorConcurrencia = resultado.error && resultado.error.includes('Ya hay un video generandose');
-                const intentosPrevios = tarea.intentos || 0;
-                const MAX_INTENTOS = 3;
-
-                if (esErrorConcurrencia && intentosPrevios < MAX_INTENTOS) {
-                    actualizarTareaAgenda(tarea.id, {
-                        estado: 'pendiente',
-                        fecha_hora: new Date(Date.now() + 30000).toISOString(), // reintenta en 30s
-                        intentos: intentosPrevios + 1
-                    });
-                    console.log(`[AGENDA] Reintento ${intentosPrevios + 1}/${MAX_INTENTOS} programado para ${tarea.canal_nombre} (error de concurrencia)`);
-                } else {
-                    actualizarTareaAgenda(tarea.id, {
-                        estado: 'fallido',
-                        resultado: { error: resultado.error },
-                        ejecutado_en: new Date().toISOString()
-                    });
-                    console.log(`[AGENDA] Fallido: ${tarea.canal_nombre} -> ${resultado.error}`);
-                }
+                actualizarTareaAgenda(tarea.id, {
+                    estado: 'fallido',
+                    resultado: { error: resultado.error },
+                    ejecutado_en: new Date().toISOString()
+                });
+                console.log(`[AGENDA] Fallido: ${tarea.canal_nombre} -> ${resultado.error}`);
             }
         });
     }
