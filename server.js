@@ -323,7 +323,18 @@ sys.exit(0)
     // Mismo margen que antes (15 minutos)
     const timeoutHandle = setTimeout(() => {
         timedOut = true;
+        const pid = proceso.pid;
+        // En Windows, proceso.kill() usa SIGTERM que Python puede ignorar
+        // si esta bloqueado en una llamada de red. Usamos taskkill /f para
+        // forzar la terminacion del proceso y todos sus hijos.
         try { proceso.kill(); } catch (e) {}
+        if (pid) {
+            const { exec } = require('child_process');
+            exec(`taskkill /f /pid ${pid} /t`, (err) => {
+                if (err) console.log(`[TIMEOUT] taskkill PID ${pid}: ${err.message}`);
+                else console.log(`[TIMEOUT] Proceso ${pid} terminado forzosamente por timeout`);
+            });
+        }
     }, 900000);
 
     proceso.stdout.on('data', (chunk) => {
