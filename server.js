@@ -649,19 +649,45 @@ setInterval(procesarAgendaVencida, 60 * 1000);
 // que es publico en GitHub.
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || "";
 
+// Cache en memoria para estadisticas de YouTube.
+// Evita llamar a la API en cada refresco del dashboard,
+// ahorrando cuota (10,000 unidades/dia por defecto en Google Cloud).
+const youtubeCache = new Map();
+const CACHE_TTL_STATS    = 60 * 60 * 1000; // 1 hora para estadisticas de canal
+const CACHE_TTL_COMMENTS = 30 * 60 * 1000; // 30 minutos para comentarios
+
+function getCached(key) {
+    const entry = youtubeCache.get(key);
+    if (!entry) return null;
+    if (Date.now() - entry.ts > entry.ttl) {
+        youtubeCache.delete(key);
+        return null;
+    }
+    return entry.data;
+}
+
+function setCache(key, data, ttl) {
+    youtubeCache.set(key, { data, ts: Date.now(), ttl });
+}
+
 app.get('/api/youtube/canal-stats', async (req, res) => {
     const { canal_id } = req.query;
     if (!canal_id) return res.json({ success: false, error: "Falta canal_id" });
+    const cacheKey = `stats:${canal_id}`;
+    const cached = getCached(cacheKey);
+    if (cached) return res.json(cached);
     try {
         const r = await fetch(`https://www.googleapis.com/youtube/v3/channels?part=statistics&id=${canal_id}&key=${YOUTUBE_API_KEY}`);
         const d = await r.json();
         const s = d.items?.[0]?.statistics || {};
-        res.json({
+        const respuesta = {
             success: true,
             suscriptores: parseInt(s.subscriberCount || 0),
             vistas: parseInt(s.viewCount || 0),
             videos: parseInt(s.videoCount || 0)
-        });
+        };
+        setCache(cacheKey, respuesta, CACHE_TTL_STATS);
+        res.json(respuesta);
     } catch (e) {
         res.json({ success: false, error: e.message });
     }
@@ -670,6 +696,9 @@ app.get('/api/youtube/canal-stats', async (req, res) => {
 app.get('/api/youtube/comentarios-recientes', async (req, res) => {
     const { canal_id } = req.query;
     if (!canal_id) return res.json({ success: false, error: "Falta canal_id" });
+    const cacheKeyC = `comments:${canal_id}`;
+    const cachedC = getCached(cacheKeyC);
+    if (cachedC) return res.json(cachedC);
     try {
         const rV = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${canal_id}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`);
         const dV = await rV.json();
@@ -694,7 +723,9 @@ app.get('/api/youtube/comentarios-recientes', async (req, res) => {
             });
         }
         todos.sort((a, b) => b.timestamp - a.timestamp);
-        res.json({ success: true, comentarios: todos });
+        const respuestaC = { success: true, comentarios: todos };
+        setCache(cacheKeyC, respuestaC, CACHE_TTL_COMMENTS);
+        res.json(respuestaC);
     } catch (e) {
         res.json({ success: false, error: e.message });
     }
