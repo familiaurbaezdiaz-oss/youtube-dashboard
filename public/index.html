@@ -129,7 +129,7 @@
 <div id="agenda-lista" style="padding:10px 30px 30px;"><div class="loading">⏳ Cargando agenda...</div></div>
 
 <div class="last-update" id="last-update"></div>
-<button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button>
+<button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button><button id="btn-apagar" data-activo="false" onclick="toggleApagarAlTerminar()" style="margin-left:10px;background:#1a1a1a;border:1px solid #444;color:#aaa;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🖥️ Apagar al terminar</button>
 
 <!-- MODAL PUBLICAR -->
 <div class="modal-overlay" id="modalOverlay" onclick="cerrarModal(event)">

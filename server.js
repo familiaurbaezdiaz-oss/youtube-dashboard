@@ -40,6 +40,7 @@ const AGENDA_FILE = path.join(__dirname, 'agenda.json');
 // Solo puede haber UN canal ejecutandose realmente en este instante,
 // ya que la cola global garantiza un solo proceso de Python a la vez.
 let canalEjecutandoseAhora = null;
+let apagarAlTerminar = false; // Si true, apaga la PC cuando la cola quede vacia
 
 // ============================================================
 //  COLA GLOBAL: solo un video se genera a la vez en todo el
@@ -397,6 +398,19 @@ sys.exit(0)
         // que el frontend alcance a verlo antes de limpiarlo.
         setTimeout(() => limpiarProgreso(canal_id), 5000);
         onResultado(resultado);
+        // Verificar si hay que apagar la PC al terminar
+        if (apagarAlTerminar) {
+            const agenda = leerAgenda();
+            const pendientes = agenda.filter(t => t.estado === 'pendiente' || t.estado === 'en_proceso');
+            if (pendientes.length === 0) {
+                console.log('[APAGADO] Cola vacia. Apagando PC en 60 segundos...');
+                const { exec } = require('child_process');
+                exec('shutdown /s /t 60', (err) => {
+                    if (err) console.log('[APAGADO] Error:', err.message);
+                });
+                apagarAlTerminar = false;
+            }
+        }
     });
 
     proceso.on('error', (err) => {
