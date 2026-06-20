@@ -589,6 +589,15 @@ app.post('/api/agenda/cancelar', (req, res) => {
     res.json({ success: true });
 });
 
+// Borrar TODAS las tareas finalizadas (completado, fallido, cancelado) de una vez
+app.post('/api/agenda/borrar-todo', (req, res) => {
+    const tareas = leerAgenda();
+    const enCurso = tareas.filter(t => t.estado === 'pendiente' || t.estado === 'en_proceso');
+    const borradas = tareas.filter(t => t.estado !== 'pendiente' && t.estado !== 'en_proceso').length;
+    guardarAgenda(enCurso);
+    res.json({ success: true, borradas });
+});
+
 // Borrar una tarea finalizada (completado, fallido o cancelado) del historial
 app.post('/api/agenda/borrar', (req, res) => {
     const { id } = req.body;

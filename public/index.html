@@ -129,7 +129,7 @@
 <div id="agenda-lista" style="padding:10px 30px 30px;"><div class="loading">⏳ Cargando agenda...</div></div>
 
 <div class="last-update" id="last-update"></div>
-<button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button><button id="btn-apagar" data-activo="false" onclick="toggleApagarAlTerminar()" style="margin-left:10px;background:#1a1a1a;border:1px solid #444;color:#aaa;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🖥️ Apagar al terminar</button>
+<button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button><button id="btn-apagar" data-activo="false" onclick="toggleApagarAlTerminar()" style="margin-left:10px;background:#1a1a1a;border:1px solid #444;color:#aaa;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🖥️ Apagar al terminar</button><button onclick="borrarTodo()" style="margin-left:10px;background:#2a0a0a;border:1px solid #8b0000;color:#ff4444;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🗑️ Borrar todos</button>
 
 <!-- MODAL PUBLICAR -->
 <div class="modal-overlay" id="modalOverlay" onclick="cerrarModal(event)">
@@ -724,6 +724,31 @@ cargarDatos();
 setInterval(cargarDatos, 300000);
 cargarAgenda();
 setInterval(cargarAgenda, 30000);
+
+async function borrarTodo() {
+    if (!confirm('Borrar todas las tareas completadas, fallidas y canceladas?')) return;
+    const r = await fetch('/api/agenda/borrar-todo', { method: 'POST' });
+    const d = await r.json();
+    if (d.success) {
+        alert('Se borraron ' + d.borradas + ' tareas.');
+        cargarAgenda();
+    }
+}
+
+async function toggleApagarAlTerminar() {
+    const btn = document.getElementById('btn-apagar');
+    const estadoActual = btn.dataset.activo === 'true';
+    const nuevoEstado = !estadoActual;
+    await fetch('/api/apagar-al-terminar', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ activar: nuevoEstado }) });
+    btn.dataset.activo = nuevoEstado;
+    if (nuevoEstado) {
+        btn.style.background = '#4a1a1a'; btn.style.borderColor = '#cc3333'; btn.style.color = '#ff6666';
+        btn.textContent = 'Apagar al terminar (ACTIVO)';
+    } else {
+        btn.style.background = '#1a1a1a'; btn.style.borderColor = '#444'; btn.style.color = '#aaa';
+        btn.textContent = 'Apagar PC al terminar';
+    }
+}
 
 // Mientras haya tareas en_proceso, refrescamos la agenda mas seguido (cada 5s)
 // para que la barra de progreso se vea fluida, sin sobrecargar el resto del tiempo.
