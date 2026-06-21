@@ -12,8 +12,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const CANALES_CONFIG = {
     "UCtCF9WMqwa5vCjgLNyx5zaw": { carpeta: "fitsecrets",          nombre: "Fit Tips Latino", musica: "energetic workout music" },
-    "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",         nombre: "Un Cafe con el Mundo", musica: "calm coffee lofi music" },
-    "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",           nombre: "Como Hacer Dinero", musica: "corporate inspiring music" },
+    "UCbRqsnb4vOGQtEW5JDtDE6Q": { carpeta: "content-bot",         nombre: "Primeros en Actuar", musica: "urgent dramatic emergency music" },
+    "UCbebqeZeD8WdSZypfxb7Tnw": { carpeta: "comohacer",           nombre: "Filosofia del Dia", musica: "corporate inspiring music" },
     "UC7uB3kv6xkRnzBqOuYK0rVQ": { carpeta: "finanzasinlimites",   nombre: "Finanzas Sin Limites", musica: "corporate inspiring music" },
     "UCT1irBNP1JR5O0UD1gcfbOA": { carpeta: "dinerosimentiras",    nombre: "Dinero Sin Mentiras", musica: "corporate inspiring music" },
     "UCMeGTxwHiUHZV7F6fFS12Qw": { carpeta: "mentedigital",        nombre: "Mente Digital", musica: "corporate inspiring music" },
@@ -28,8 +28,8 @@ const CANALES_CONFIG = {
     "UCv6vYEGZkvQLJP22N0VVXrA": { carpeta: "tuproductividad",     nombre: "tu.Productividad", musica: "cinematic dramatic music" },
     "UCJtuIFNfcNFvRBlEu2cRkJw": { carpeta: "psicologiasinfiltros",nombre: "Psicologia Sin Filtros", musica: "peaceful ambient music" },
     "UCW5YLDNwgy5Czwfbe8IarlA": { carpeta: "oraciondepoder",      nombre: "Oracion de Poder Diario", musica: "powerful worship music" },
-    "UCeFWhWnGXGr4M6amI3guCXw": { carpeta: "pazyoracion",         nombre: "Paz y Oracion Cotidiana", musica: "peaceful ambient music" },
-    "UCypPbHU2jLW5LOfhKALZEAg": { carpeta: "misteriosbiblicos",   nombre: "Misterios y Ensenanzas Biblicas", musica: "mysterious cinematic music" },
+    "UCeFWhWnGXGr4M6amI3guCXw": { carpeta: "pazyoracion",         nombre: "Raices que Sanan", musica: "peaceful ambient music" },
+    "UCypPbHU2jLW5LOfhKALZEAg": { carpeta: "misteriosbiblicos",   nombre: "Mente al Descubierto", musica: "dark mysterious cinematic music" },
     "UCKcC76S4M3re5mOhPtU1-Sg": { carpeta: "espiritudevencedor",  nombre: "Espiritu de Vencedor", musica: "epic motivational music" },
 };
 
