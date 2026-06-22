@@ -240,6 +240,16 @@ contenido = "${contenidoEscapado}"
 print(f"Iniciando pipeline para {NOMBRE_CANAL} - modo: {modo}", flush=True)
 print("PROGRESS:5", flush=True)
 
+try:
+    from modules.script_generator import seleccionar_tema as _seleccionar_tema
+    if contenido.strip() == "AUTO":
+        contenido = _seleccionar_tema()
+        if isinstance(contenido, dict):
+            contenido = contenido.get("tema") or contenido.get("titulo") or str(contenido)
+except ImportError:
+    if contenido.strip() == "AUTO":
+        contenido = "tema del dia"
+
 if modo == "idea":
     resultado = generar_script(contenido, "short")
     script = resultado['script']
@@ -336,7 +346,7 @@ sys.exit(0)
                 else console.log(`[TIMEOUT] Proceso ${pid} terminado forzosamente por timeout`);
             });
         }
-    }, 900000);
+    }, 1800000);
 
     proceso.stdout.on('data', (chunk) => {
         const texto = chunk.toString();
@@ -383,7 +393,7 @@ sys.exit(0)
             setProgreso(canal_id, 100);
             resultado = { ok: true, videoId, url: `https://youtube.com/shorts/${videoId}` };
         } else if (timedOut) {
-            resultado = { ok: false, error: "Tiempo de espera agotado (15 min) sin completar el video" };
+            resultado = { ok: false, error: "Tiempo de espera agotado (30 min) sin completar el video" };
         } else if (codigo !== 0) {
             console.log("\n===== ERROR (codigo de salida) =====");
             console.log(`Codigo: ${codigo}`);
@@ -596,6 +606,12 @@ app.post('/api/agenda/borrar-todo', (req, res) => {
     const borradas = tareas.filter(t => t.estado !== 'pendiente' && t.estado !== 'en_proceso').length;
     guardarAgenda(enCurso);
     res.json({ success: true, borradas });
+});
+
+app.post('/api/apagar-al-terminar', (req, res) => {
+    const { activar } = req.body;
+    apagarAlTerminar = !!activar;
+    res.json({ success: true, apagarAlTerminar });
 });
 
 // Borrar una tarea finalizada (completado, fallido o cancelado) del historial

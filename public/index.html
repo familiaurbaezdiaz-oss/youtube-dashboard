@@ -106,6 +106,29 @@
         .agenda-progreso-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: #00d4ff; margin-bottom: 5px; }
         .agenda-progreso-bar { background: #0a1a2a; border-radius: 10px; height: 10px; overflow: hidden; border: 1px solid #00d4ff44; }
         .agenda-progreso-fill { height: 100%; border-radius: 10px; background: linear-gradient(90deg, #00d4ff, #4CAF50); transition: width 0.6s ease; }
+
+        /* ── MODAL MASIVO ── */
+        .masivo-canales { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 340px; overflow-y: auto; margin-bottom: 18px; padding-right: 4px; }
+        .masivo-canal-item { display: flex; align-items: center; gap: 10px; background: #111; border: 1px solid #333; border-radius: 10px; padding: 10px 12px; cursor: pointer; transition: all 0.2s; user-select: none; }
+        .masivo-canal-item:hover { border-color: #555; }
+        .masivo-canal-item.seleccionado { border-color: #00d4ff; background: #0a1a2a; }
+        .masivo-canal-item input[type=checkbox] { accent-color: #00d4ff; width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+        .masivo-canal-nombre { font-size: 0.82rem; font-weight: bold; color: #ddd; }
+        .masivo-canal-emoji { font-size: 1.2rem; }
+        .masivo-controles { display: flex; gap: 10px; margin-bottom: 14px; }
+        .masivo-controles button { flex: 1; padding: 7px; border-radius: 8px; border: 1px solid #444; background: #222; color: #aaa; font-size: 0.78rem; cursor: pointer; }
+        .masivo-controles button:hover { background: #333; color: #fff; }
+        .masivo-separador { border: none; border-top: 1px solid #333; margin: 16px 0; }
+        .masivo-fecha-bloque { margin-bottom: 14px; }
+        .masivo-fecha-fila { display: flex; gap: 10px; margin-top: 8px; }
+        .masivo-fecha-fila input { flex: 1; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; color: #fff; padding: 10px; font-size: 0.9rem; }
+        .masivo-intervalo { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; font-size: 0.85rem; color: #aaa; }
+        .masivo-intervalo input[type=number] { width: 70px; background: #0a0a0a; border: 1px solid #333; border-radius: 8px; color: #fff; padding: 8px; font-size: 0.9rem; text-align: center; }
+        .masivo-status { background: #111; border-radius: 10px; padding: 12px; font-size: 0.82rem; color: #aaa; display: none; max-height: 150px; overflow-y: auto; margin-top: 10px; }
+        .masivo-status.active { display: block; }
+        .masivo-status .ok { color: #4CAF50; }
+        .masivo-status .error { color: #FF6B6B; }
+        .masivo-status .info { color: #00d4ff; }
     </style>
 </head>
 <body>
@@ -119,17 +142,22 @@
     <div class="total-card"><div class="numero" id="total-videos">--</div><div class="label">🎬 Videos Publicados</div></div>
 </div>
 
-<div class="seccion-titulo">📺 CANALES ACTIVOS (9)</div>
+
 <div id="canales-activos" class="canales"><div class="loading">⏳ Cargando...</div></div>
 
-<div class="seccion-titulo">🆕 CANALES NUEVOS (11)</div>
+
 <div id="canales-nuevos" class="canales"><div class="loading">⏳ Cargando...</div></div>
 
+<div class="seccion-titulo">✅ PUBLICADOS HOY</div>
+<div id="publicados-hoy" style="padding:5px 30px 15px;"></div>
 <div class="seccion-titulo">📅 VIDEOS AGENDADOS</div>
 <div id="agenda-lista" style="padding:10px 30px 30px;"><div class="loading">⏳ Cargando agenda...</div></div>
 
 <div class="last-update" id="last-update"></div>
-<button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button><button id="btn-apagar" data-activo="false" onclick="toggleApagarAlTerminar()" style="margin-left:10px;background:#1a1a1a;border:1px solid #444;color:#aaa;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🖥️ Apagar al terminar</button><button onclick="borrarTodo()" style="margin-left:10px;background:#2a0a0a;border:1px solid #8b0000;color:#ff4444;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🗑️ Borrar todos</button>
+<button class="refresh-btn" onclick="cargarDatos()">🔄 Actualizar</button>
+<button id="btn-apagar" data-activo="false" onclick="toggleApagarAlTerminar()" style="margin-left:10px;background:#1a1a1a;border:1px solid #444;color:#aaa;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🖥️ Apagar al terminar</button>
+<button onclick="borrarTodo()" style="margin-left:10px;background:#2a0a0a;border:1px solid #8b0000;color:#ff4444;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;">🗑️ Borrar todos</button>
+<button onclick="abrirMasivo()" style="margin-left:10px;background:#0a2a1a;border:1px solid #00d4ff;color:#00d4ff;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer;font-weight:bold;">📋 Generar Masivo</button>
 
 <!-- MODAL PUBLICAR -->
 <div class="modal-overlay" id="modalOverlay" onclick="cerrarModal(event)">
@@ -214,18 +242,61 @@
             </div>
         </div>
         <div id="editarAvisoEnCola" style="display:none;background:#2a2a00;border:1px solid #FFD700;border-radius:10px;padding:12px;margin-top:10px;font-size:0.85rem;color:#FFD700;">
-            ⚠️ Esta tarea ya esta en cola esperando turno. Solo puedes editar el contenido, no la fecha/hora.
+            Esta tarea ya esta en cola esperando turno. Solo puedes editar el contenido, no la fecha/hora.
         </div>
         <button class="btn-generar" id="btnGuardarEdicionAgenda" onclick="guardarEdicionAgenda()" style="background:#00d4ff;color:#000;">💾 Guardar cambios</button>
         <div class="status-box" id="statusEditarAgenda"></div>
     </div>
 </div>
 
-<script>
+<!-- MODAL GENERAR MASIVO -->
+<div class="modal-overlay" id="modalMasivo" onclick="cerrarMasivo(event)">
+    <div class="modal" style="max-width:660px;">
+        <div class="modal-header">
+            <div class="modal-title">📋 Generar Masivo — Selecciona canales</div>
+            <button class="modal-close" onclick="document.getElementById('modalMasivo').classList.remove('active')">✕</button>
+        </div>
+        <p style="font-size:0.82rem;color:#888;margin-bottom:14px;">Cada canal usará su propia lógica interna para generar el video automáticamente.</p>
 
+        <div class="masivo-controles">
+            <button onclick="seleccionarTodosCanales()">✅ Seleccionar todos</button>
+            <button onclick="deseleccionarTodosCanales()">⬜ Deseleccionar todos</button>
+        </div>
+
+        <div class="masivo-canales" id="masivo-canales-lista"></div>
+
+        <hr class="masivo-separador">
+<div style="margin-bottom:14px;">
+    <label class="input-label">💡 Tema para todos los canales (opcional — deja vacío para AUTO):</label>
+    <textarea id="masivoTema" placeholder="Ej: Los 3 errores que cometen el 90% de las personas..." style="min-height:60px;background:#0a0a0a;border:1px solid #333;border-radius:8px;color:#fff;padding:10px;font-size:0.85rem;width:100%;"></textarea>
+</div>
+
+        <div class="masivo-fecha-bloque">
+            <label class="input-label">📅 Fecha y hora de inicio del primer video:</label>
+            <div class="masivo-fecha-fila">
+                <input type="date" id="masivoFecha">
+                <input type="time" id="masivoHora">
+            </div>
+        </div>
+
+        <div class="masivo-intervalo">
+            <span>⏱️ Minutos entre cada canal:</span>
+            <input type="number" id="masivoIntervalo" value="6" min="1" max="60">
+            <span style="color:#555;font-size:0.78rem;">(recomendado: 6 min)</span>
+        </div>
+
+        <button class="btn-generar" id="btnAgendarMasivo" onclick="agendarMasivo()" style="background:linear-gradient(135deg,#00d4ff,#4CAF50);color:#000;">
+            🚀 Agendar videos para canales seleccionados
+        </button>
+
+        <div class="masivo-status" id="masivoStatus"></div>
+    </div>
+</div>
+
+<script>
 const CANALES_ACTIVOS = [
     { nombre: "Fit Tips Latino",      id: "UCtCF9WMqwa5vCjgLNyx5zaw", color: "#FF6B6B", emoji: "💪" },
-    { nombre: "Primeros en Actuar", id: "UCbRqsnb4vOGQtEW5JDtDE6Q", color: "#4ECDC4", emoji: "☕" },
+    { nombre: "Primeros en Actuar",   id: "UCbRqsnb4vOGQtEW5JDtDE6Q", color: "#4ECDC4", emoji: "☕" },
     { nombre: "Filosofia del Dia",    id: "UCbebqeZeD8WdSZypfxb7Tnw", color: "#45B7D1", emoji: "💰" },
     { nombre: "Finanzas Sin Limites", id: "UC7uB3kv6xkRnzBqOuYK0rVQ", color: "#96CEB4", emoji: "📈" },
     { nombre: "Dinero Sin Mentiras",  id: "UCT1irBNP1JR5O0UD1gcfbOA", color: "#FFEAA7", emoji: "🔥" },
@@ -234,7 +305,6 @@ const CANALES_ACTIVOS = [
     { nombre: "Secretos de Salud",    id: "UCz6JMCRoZTqZNTAPRd7alDQ", color: "#82E0AA", emoji: "🥦" },
     { nombre: "Come Muevete y Sana",  id: "UCN8GZhEYvJXdIkXpoBLfY4w", color: "#F1948A", emoji: "🏃" },
 ];
-
 const CANALES_NUEVOS = [
     { nombre: "Fe y Abundancia",                   id: "UCefqr_OtXH0c8yvOIuSIs8g", color: "#FFD700", emoji: "🙏" },
     { nombre: "Historia Sin Censura",              id: "UCrHdus3_spVg2fYDAuE97AQ", color: "#8B4513", emoji: "🌍" },
@@ -244,11 +314,10 @@ const CANALES_NUEVOS = [
     { nombre: "Moda Sin Limites",                  id: "UCv6vYEGZkvQLJP22N0VVXrA", color: "#C9A84C", emoji: "👗" },
     { nombre: "Psicologia Sin Filtros",            id: "UCJtuIFNfcNFvRBlEu2cRkJw", color: "#9C27B0", emoji: "🧠" },
     { nombre: "Oracion de Poder Diario",           id: "UCW5YLDNwgy5Czwfbe8IarlA", color: "#D4AF37", emoji: "🙌" },
-    { nombre: "Raices que Sanan",           id: "UCeFWhWnGXGr4M6amI3guCXw", color: "#4A90A4", emoji: "🕊️" },
-    { nombre: "Mente al Descubierto",   id: "UCypPbHU2jLW5LOfhKALZEAg", color: "#8B6914", emoji: "📖" },
+    { nombre: "Raices que Sanan",                  id: "UCeFWhWnGXGr4M6amI3guCXw", color: "#4A90A4", emoji: "🕊️" },
+    { nombre: "Mente al Descubierto",              id: "UCypPbHU2jLW5LOfhKALZEAg", color: "#8B6914", emoji: "📖" },
     { nombre: "Espiritu de Vencedor",              id: "UCKcC76S4M3re5mOhPtU1-Sg", color: "#B8860B", emoji: "⚔️" },
 ];
-
 const TODOS_CANALES = [...CANALES_ACTIVOS, ...CANALES_NUEVOS];
 let canalActual = null;
 let comentarioContexto = null;
@@ -256,25 +325,10 @@ const comentariosPorCanal = {};
 
 function fmt(n) { if(!n||n==='0')return'0';n=parseInt(n);if(n>=1000000)return(n/1000000).toFixed(1)+'M';if(n>=1000)return(n/1000).toFixed(1)+'K';return n.toString(); }
 function pct(v,m){ return !v?'0.0':Math.min((parseInt(v)/m)*100,100).toFixed(1); }
-
-function vistasPorVideo(vistas, videos) {
-    if (!videos || videos === 0) return 0;
-    return Math.round(vistas / videos);
-}
-function subsPor1000Vistas(subs, vistas) {
-    if (!vistas || vistas === 0) return 0;
-    return (subs / vistas) * 1000;
-}
-function colorSemaforoVistasPorVideo(valor) {
-    if (valor > 1500) return '#4CAF50';
-    if (valor >= 500) return '#FFC107';
-    return '#FF6B6B';
-}
-function colorSemaforoSubsPor1000(valor) {
-    if (valor > 4) return '#4CAF50';
-    if (valor >= 2) return '#FFC107';
-    return '#FF6B6B';
-}
+function vistasPorVideo(vistas, videos) { if (!videos || videos === 0) return 0; return Math.round(vistas / videos); }
+function subsPor1000Vistas(subs, vistas) { if (!vistas || vistas === 0) return 0; return (subs / vistas) * 1000; }
+function colorSemaforoVistasPorVideo(valor) { if (valor > 1500) return '#4CAF50'; if (valor >= 500) return '#FFC107'; return '#FF6B6B'; }
+function colorSemaforoSubsPor1000(valor) { if (valor > 4) return '#4CAF50'; if (valor >= 2) return '#FFC107'; return '#FF6B6B'; }
 
 async function fetchCanalStats(canal) {
     const r = await fetch(`/api/youtube/canal-stats?canal_id=${canal.id}`);
@@ -282,7 +336,6 @@ async function fetchCanalStats(canal) {
     if (!d.success) return {...canal, suscriptores:0, vistas:0, videos:0};
     return {...canal, suscriptores:d.suscriptores, vistas:d.vistas, videos:d.videos};
 }
-
 async function fetchComentariosRecientes(canalId) {
     try {
         const r = await fetch(`/api/youtube/comentarios-recientes?canal_id=${canalId}`);
@@ -303,7 +356,6 @@ function renderCanal(c) {
                 ${primerComentario ? `<span style="color:#888">📹 ${primerComentario.videoTitulo.substring(0,45)}...</span><br><span style="color:#ddd">👤 ${primerComentario.autor}: "${primerComentario.texto.substring(0,60)}..."</span>` : ''}
             </span>
         </span>` : '';
-
     return `
         <div class="canal-card" style="border-top:3px solid ${c.color}">
             <div class="canal-header">
@@ -416,7 +468,6 @@ async function abrirMensajes(id,nombre,color,emoji){
             </div>
         </div>`).join('');
 }
-
 function cerrarMensajes(e){if(e.target===document.getElementById('modalMensajes'))document.getElementById('modalMensajes').classList.remove('active');}
 
 function responderConTexto(id,autorEnc,textoEnc){
@@ -534,21 +585,134 @@ async function agendarDesdeGuion() {
     }
 }
 
+// ══════════════════════════════════════════════
+//  GENERAR MASIVO
+// ══════════════════════════════════════════════
+function abrirMasivo() {
+    // Renderizar lista de canales con checkboxes
+    const lista = document.getElementById('masivo-canales-lista');
+    lista.innerHTML = TODOS_CANALES.map(c => `
+        <div class="masivo-canal-item" id="masivo-item-${c.id}" onclick="toggleCanalMasivo('${c.id}')">
+            <input type="checkbox" id="masivo-chk-${c.id}" onclick="event.stopPropagation();toggleCanalMasivo('${c.id}')">
+            <span class="masivo-canal-emoji">${c.emoji}</span>
+            <span class="masivo-canal-nombre">${c.nombre}</span>
+        </div>`).join('');
+
+    // Fecha de hoy por defecto
+    const hoy = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('masivoFecha').value = `${hoy.getFullYear()}-${pad(hoy.getMonth()+1)}-${pad(hoy.getDate())}`;
+    document.getElementById('masivoHora').value = `${pad(hoy.getHours()+1)}:00`;
+    document.getElementById('masivoIntervalo').value = '6';
+
+    // Reset status
+    const st = document.getElementById('masivoStatus');
+    st.innerHTML = ''; st.classList.remove('active');
+    const btn = document.getElementById('btnAgendarMasivo');
+    btn.disabled = false; btn.textContent = '🚀 Agendar videos para canales seleccionados';
+
+    document.getElementById('modalMasivo').classList.add('active');
+}
+
+function cerrarMasivo(e) {
+    if (e.target === document.getElementById('modalMasivo'))
+        document.getElementById('modalMasivo').classList.remove('active');
+}
+
+function toggleCanalMasivo(id) {
+    const chk = document.getElementById(`masivo-chk-${id}`);
+    const item = document.getElementById(`masivo-item-${id}`);
+    chk.checked = !chk.checked;
+    item.classList.toggle('seleccionado', chk.checked);
+}
+
+function seleccionarTodosCanales() {
+    TODOS_CANALES.forEach(c => {
+        document.getElementById(`masivo-chk-${c.id}`).checked = true;
+        document.getElementById(`masivo-item-${c.id}`).classList.add('seleccionado');
+    });
+}
+
+function deseleccionarTodosCanales() {
+    TODOS_CANALES.forEach(c => {
+        document.getElementById(`masivo-chk-${c.id}`).checked = false;
+        document.getElementById(`masivo-item-${c.id}`).classList.remove('seleccionado');
+    });
+}
+
+async function agendarMasivo() {
+    const seleccionados = TODOS_CANALES.filter(c => document.getElementById(`masivo-chk-${c.id}`).checked);
+    if (seleccionados.length === 0) return alert('Selecciona al menos un canal');
+
+    const fecha = document.getElementById('masivoFecha').value;
+    const hora = document.getElementById('masivoHora').value;
+    if (!fecha || !hora) return alert('Selecciona fecha y hora de inicio');
+
+    const intervalo = parseInt(document.getElementById('masivoIntervalo').value) || 6;
+    const fechaBase = new Date(fecha + 'T' + hora + ':00');
+    if (isNaN(fechaBase.getTime())) return alert('Fecha/hora invalida');
+
+    const btn = document.getElementById('btnAgendarMasivo');
+    btn.disabled = true; btn.textContent = '⏳ Agendando...';
+
+    const st = document.getElementById('masivoStatus');
+    st.innerHTML = `<div class="info">📋 Agendando ${seleccionados.length} canales — espera...</div>`;
+    st.classList.add('active');
+
+    let exitosos = 0;
+    let fallidos = 0;
+
+    for (let i = 0; i < seleccionados.length; i++) {
+        const canal = seleccionados[i];
+        const fechaHora = new Date(fechaBase.getTime() + i * intervalo * 60000);
+        const iso = fechaHora.toISOString();
+        const horaStr = fechaHora.toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit' });
+
+        try {
+            const res = await fetch('/api/agendar-video', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    canal_id: canal.id,
+                    canal_nombre: canal.nombre,
+                    modo: 'idea',
+                    contenido: document.getElementById('masivoTema').value.trim() || 'AUTO',
+                    fecha_hora: iso
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                exitosos++;
+                st.innerHTML += `<div class="ok">✅ [${horaStr}] ${canal.emoji} ${canal.nombre}</div>`;
+            } else {
+                fallidos++;
+                st.innerHTML += `<div class="error">❌ ${canal.nombre}: ${data.error}</div>`;
+            }
+        } catch(e) {
+            fallidos++;
+            st.innerHTML += `<div class="error">❌ ${canal.nombre}: ${e.message}</div>`;
+        }
+        st.scrollTop = st.scrollHeight;
+    }
+
+    st.innerHTML += `<br><div class="info">✅ ${exitosos} agendados · ${fallidos > 0 ? '❌ ' + fallidos + ' fallidos' : '0 fallidos'}</div>`;
+    btn.textContent = `✅ Listo — ${exitosos}/${seleccionados.length} agendados`;
+    cargarAgenda();
+}
+
+// ══════════════════════════════════════════════
+
 function etiquetaEstado(estado) {
     const mapa = { pendiente: '🟡 Pendiente', en_proceso: '🔵 En proceso', completado: '🟢 Completado', fallido: '🔴 Fallido', cancelado: '⚪ Cancelado' };
     return mapa[estado] || estado;
 }
-
-let canalesEnProcesoVisibles = {};
 
 async function consultarProgreso(canalId) {
     try {
         const res = await fetch('/api/progreso/' + encodeURIComponent(canalId));
         const data = await res.json();
         return data;
-    } catch (e) {
-        return { success: false };
-    }
+    } catch (e) { return { success: false }; }
 }
 
 let tareasPorId = {};
@@ -563,14 +727,11 @@ async function cargarAgenda() {
             cont.innerHTML = '<div class="no-comentarios">📭 No hay videos agendados</div>';
             return;
         }
-
-        // Tareas en_proceso: consultamos su progreso en vivo antes de pintar
         const enProcesoIds = data.tareas.filter(t => t.estado === 'en_proceso').map(t => t.canal_id);
         const progresos = {};
         await Promise.all(enProcesoIds.map(async (canalId) => {
             progresos[canalId] = await consultarProgreso(canalId);
         }));
-
         cont.innerHTML = data.tareas.map(function(t) {
             const fecha = new Date(t.fecha_hora).toLocaleString('es-DO', { dateStyle: 'medium', timeStyle: 'short' });
             const resultadoHtml = (t.resultado && t.resultado.url)
@@ -578,12 +739,9 @@ async function cargarAgenda() {
                 : ((t.resultado && t.resultado.error) ? '<div style="color:#FF6B6B;">' + t.resultado.error + '</div>' : '');
             const q = String.fromCharCode(39);
             const cancelarBtn = t.estado === 'pendiente'
-                ? '<button class="btn-cancelar-agenda" onclick="cancelarAgenda(' + q + t.id + q + ')">Cancelar</button>'
-                : '';
+                ? '<button class="btn-cancelar-agenda" onclick="cancelarAgenda(' + q + t.id + q + ')">Cancelar</button>' : '';
             const borrarBtn = (t.estado === 'completado' || t.estado === 'fallido' || t.estado === 'cancelado')
-                ? '<button class="btn-cancelar-agenda" onclick="borrarAgenda(' + q + t.id + q + ')">Borrar</button>'
-                : '';
-
+                ? '<button class="btn-cancelar-agenda" onclick="borrarAgenda(' + q + t.id + q + ')">Borrar</button>' : '';
             let progresoHtml = '';
             let enColaEsperandoTurno = false;
             if (t.estado === 'en_proceso') {
@@ -596,24 +754,16 @@ async function cargarAgenda() {
                     '<div class="agenda-progreso-bar"><div class="agenda-progreso-fill" style="width:' + pct + '%;"></div></div>' +
                     '</div>';
             }
-
             const esEditable = t.estado === 'pendiente' || enColaEsperandoTurno;
             const editarBtn = esEditable
-                ? '<button class="btn-cancelar-agenda" style="border-color:#00d4ff;color:#00d4ff;" onclick="abrirEditarAgenda(' + q + t.id + q + ')">Editar</button>'
-                : '';
-
+                ? '<button class="btn-cancelar-agenda" style="border-color:#00d4ff;color:#00d4ff;" onclick="abrirEditarAgenda(' + q + t.id + q + ')">Editar</button>' : '';
             tareasPorId[t.id] = t;
-
             return '<div class="agenda-lista-item">' +
                 '<span class="agenda-canal">' + t.canal_nombre + '</span>' +
                 '<span class="agenda-estado ' + t.estado + '">' + etiquetaEstado(t.estado) + '</span>' +
                 '<div class="agenda-fecha">📅 ' + fecha + '</div>' +
                 '<div class="agenda-contenido">' + t.contenido.substring(0, 100) + (t.contenido.length > 100 ? '...' : '') + '</div>' +
-                progresoHtml +
-                resultadoHtml +
-                editarBtn +
-                cancelarBtn +
-                borrarBtn +
+                progresoHtml + resultadoHtml + editarBtn + cancelarBtn + borrarBtn +
                 '</div>';
         }).join('');
     } catch (e) {
@@ -624,68 +774,55 @@ async function cargarAgenda() {
 async function cancelarAgenda(id) {
     if (!confirm('¿Cancelar este video agendado?')) return;
     try {
-        const res = await fetch('/api/agenda/cancelar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+        const res = await fetch('/api/agenda/cancelar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
         const data = await res.json();
         if (data.success) cargarAgenda();
         else alert('Error: ' + data.error);
-    } catch (e) {
-        alert('Error: ' + e.message);
-    }
+    } catch (e) { alert('Error: ' + e.message); }
 }
 
 async function borrarAgenda(id) {
     if (!confirm('¿Borrar este registro del historial?')) return;
     try {
-        const res = await fetch('/api/agenda/borrar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: id }) });
+        const res = await fetch('/api/agenda/borrar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
         const data = await res.json();
         if (data.success) cargarAgenda();
         else alert('Error: ' + data.error);
-    } catch (e) {
-        alert('Error: ' + e.message);
-    }
+    } catch (e) { alert('Error: ' + e.message); }
 }
 
 let idTareaEditando = null;
-
 function abrirEditarAgenda(id) {
     const tarea = tareasPorId[id];
     if (!tarea) return alert('No se encontro la tarea');
     idTareaEditando = id;
-
     const enCola = tarea.estado === 'en_proceso';
     document.getElementById('editarCanalInfo').textContent = 'Canal: ' + tarea.canal_nombre;
     document.getElementById('editarContenido').value = tarea.contenido;
     document.getElementById('editarAvisoEnCola').style.display = enCola ? 'block' : 'none';
     document.getElementById('editarFechaBloque').style.display = enCola ? 'none' : 'block';
-
     if (!enCola) {
         const f = new Date(tarea.fecha_hora);
         const pad = n => String(n).padStart(2, '0');
         document.getElementById('editarFecha').value = f.getFullYear() + '-' + pad(f.getMonth() + 1) + '-' + pad(f.getDate());
         document.getElementById('editarHora').value = pad(f.getHours()) + ':' + pad(f.getMinutes());
     }
-
     document.getElementById('statusEditarAgenda').classList.remove('active');
     document.getElementById('statusEditarAgenda').innerHTML = '';
     document.getElementById('btnGuardarEdicionAgenda').disabled = false;
     document.getElementById('btnGuardarEdicionAgenda').textContent = '💾 Guardar cambios';
     document.getElementById('modalEditarAgenda').classList.add('active');
 }
-
 function cerrarEditarAgenda(e) {
-    if (!e || e.target === document.getElementById('modalEditarAgenda')) {
+    if (!e || e.target === document.getElementById('modalEditarAgenda'))
         document.getElementById('modalEditarAgenda').classList.remove('active');
-    }
 }
-
 async function guardarEdicionAgenda() {
     if (!idTareaEditando) return;
     const tarea = tareasPorId[idTareaEditando];
     const contenido = document.getElementById('editarContenido').value.trim();
     if (!contenido) return alert('El contenido no puede quedar vacio');
-
     const body = { id: idTareaEditando, contenido };
-
     const enCola = tarea && tarea.estado === 'en_proceso';
     if (!enCola) {
         const fecha = document.getElementById('editarFecha').value;
@@ -695,31 +832,57 @@ async function guardarEdicionAgenda() {
         if (isNaN(local.getTime())) return alert('Fecha/hora invalida');
         body.fecha_hora = local.toISOString();
     }
-
     const status = document.getElementById('statusEditarAgenda');
     const btn = document.getElementById('btnGuardarEdicionAgenda');
     btn.disabled = true; btn.textContent = '⏳ Guardando...';
-
     try {
         const res = await fetch('/api/agenda/editar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         const data = await res.json();
         if (data.success) {
-            status.innerHTML = '<div class="status-line ok">✅ Cambios guardados</div>';
-            status.classList.add('active');
+            status.innerHTML = '<div class="status-line ok">✅ Cambios guardados</div>'; status.classList.add('active');
             cargarAgenda();
             setTimeout(() => document.getElementById('modalEditarAgenda').classList.remove('active'), 800);
         } else {
-            status.innerHTML = '<div class="status-line error">❌ ' + data.error + '</div>';
-            status.classList.add('active');
+            status.innerHTML = '<div class="status-line error">❌ ' + data.error + '</div>'; status.classList.add('active');
             btn.disabled = false; btn.textContent = '💾 Guardar cambios';
         }
     } catch (e) {
-        status.innerHTML = '<div class="status-line error">❌ Error: ' + e.message + '</div>';
-        status.classList.add('active');
+        status.innerHTML = '<div class="status-line error">❌ Error: ' + e.message + '</div>'; status.classList.add('active');
         btn.disabled = false; btn.textContent = '💾 Guardar cambios';
     }
 }
 
+async function cargarPublicadosHoy() {
+    const cont = document.getElementById('publicados-hoy');
+    if (!cont) return;
+    try {
+        const res = await fetch('/api/agenda');
+        const data = await res.json();
+        if (!data.success) return;
+        const hoy = new Date().toISOString().slice(0, 10);
+        const completados = data.tareas.filter(t =>
+            t.estado === 'completado' &&
+            t.ejecutado_en &&
+            t.ejecutado_en.slice(0, 10) === hoy &&
+            t.resultado && t.resultado.url
+        );
+        if (!completados.length) {
+            cont.innerHTML = '<div style="color:#555;font-size:0.85rem;padding-bottom:10px;">Aún no hay videos publicados hoy.</div>';
+            return;
+        }
+        cont.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;padding-bottom:10px;">' +
+            completados.map(t => `<div style="background:#0a2a0a;border:1px solid #4CAF50;border-radius:10px;padding:10px 14px;font-size:0.82rem;">
+                <span style="color:#4CAF50;font-weight:bold;">${t.canal_nombre}</span>
+                <div style="color:#aaa;margin-top:3px;">${t.contenido.substring(0,50)}${t.contenido.length>50?'...':''}</div>
+                <a href="${t.resultado.url}" target="_blank" style="color:#4CAF50;font-size:0.75rem;">▶ Ver video</a>
+            </div>`).join('') +
+            `<div style="width:100%;color:#4CAF50;font-size:0.8rem;margin-top:5px;">✅ ${completados.length} video${completados.length>1?'s':''} publicado${completados.length>1?'s':''} hoy</div>` +
+            '</div>';
+    } catch(e) {}
+}
+
+cargarPublicadosHoy();
+setInterval(cargarPublicadosHoy, 60000);
 cargarDatos();
 setInterval(cargarDatos, 300000);
 cargarAgenda();
@@ -729,10 +892,7 @@ async function borrarTodo() {
     if (!confirm('Borrar todas las tareas completadas, fallidas y canceladas?')) return;
     const r = await fetch('/api/agenda/borrar-todo', { method: 'POST' });
     const d = await r.json();
-    if (d.success) {
-        alert('Se borraron ' + d.borradas + ' tareas.');
-        cargarAgenda();
-    }
+    if (d.success) { alert('Se borraron ' + d.borradas + ' tareas.'); cargarAgenda(); }
 }
 
 async function toggleApagarAlTerminar() {
@@ -750,8 +910,6 @@ async function toggleApagarAlTerminar() {
     }
 }
 
-// Mientras haya tareas en_proceso, refrescamos la agenda mas seguido (cada 5s)
-// para que la barra de progreso se vea fluida, sin sobrecargar el resto del tiempo.
 let intervaloRapidoAgenda = null;
 async function ajustarVelocidadRefrescoAgenda() {
     try {
