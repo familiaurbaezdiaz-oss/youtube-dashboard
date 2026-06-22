@@ -25,7 +25,7 @@ const CANALES_CONFIG = {
     "UCrHdus3_spVg2fYDAuE97AQ": { carpeta: "historiacensura",     nombre: "Historia Sin Censura", musica: "cinematic dramatic music" },
     "UCBg1Ilkd_rOXd98BFwtllhA": { carpeta: "mentalidadganadora",  nombre: "Mentalidad Ganadora", musica: "corporate inspiring music" },
     "UCDwuOde7WNjvRzVFTAPDLfQ": { carpeta: "crianzareal",         nombre: "Crianza Real", musica: "warm acoustic music" },
-    "UCv6vYEGZkvQLJP22N0VVXrA": { carpeta: "tuproductividad",     nombre: "tu.Productividad", musica: "cinematic dramatic music" },
+    "UCv6vYEGZkvQLJP22N0VVXrA": { carpeta: "tuproductividad",     nombre: "Moda Sin Limites", musica: "cinematic dramatic music" },
     "UCJtuIFNfcNFvRBlEu2cRkJw": { carpeta: "psicologiasinfiltros",nombre: "Psicologia Sin Filtros", musica: "peaceful ambient music" },
     "UCW5YLDNwgy5Czwfbe8IarlA": { carpeta: "oraciondepoder",      nombre: "Oracion de Poder Diario", musica: "powerful worship music" },
     "UCeFWhWnGXGr4M6amI3guCXw": { carpeta: "pazyoracion",         nombre: "Raices que Sanan", musica: "peaceful ambient music" },
